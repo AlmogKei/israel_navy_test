@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Heebo', sans-serif;
+  background: #f4f4f4;
+  direction: rtl;
+}
+
+.register-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #003366, #001a33);
+}
+
+.register-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  padding: 40px 30px;
+  width: 350px;
+  max-width: 90%;
+  text-align: center;
+  animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+  0% {opacity: 0; transform: translateY(20px);}
+  100% {opacity: 1; transform: translateY(0);}
+}
+
+.register-title {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  text-align: right; 
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 400;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.register-btn {
+  background-color: #4CAF50;
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+  width: 100%;
+  margin-top: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.register-btn:hover {
+  background-color: #45a049;
+  box-shadow: 0 8px 20px rgba(76,175,80,0.3);
+  transform: translateY(-2px);
+}
+
+.login-link {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.login-link a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .register-card {
+    width: 90%;
+    padding: 30px 20px;
+  }
+
+  .register-title {
+    font-size: 1.8rem;
+  }
+}
