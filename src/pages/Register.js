@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Register.css';
 
+const API_URL = 'https://israel-navy-test.onrender.com';
+
 const Register = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -14,7 +16,7 @@ const Register = () => {
     e.preventDefault();
   
     try {
-      const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
+      const response = await fetch(`${API_URL}/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
