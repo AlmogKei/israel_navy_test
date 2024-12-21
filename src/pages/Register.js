@@ -26,14 +26,12 @@ const Register = () => {
         })
       });
 
-      // אם התגובה הצליחה, ננווט ישירות ללא ניסיון לקרוא JSON
       if (response.status === 200) {
         console.log('Registration successful');
-        navigate('/login');  // שימוש ב-navigate במקום window.location
+        window.location.href = '/login';
         return;
       }
 
-      // אם יש שגיאה, נציג אותה
       console.error('Registration failed');
 
     } catch (err) {
