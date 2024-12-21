@@ -9,28 +9,23 @@ const Register = () => {
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
 
+  // send the details to the docker server
   const handleSubmit = async (e) => {
     e.preventDefault();
   
     try {
       const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          fullName, 
-          email, 
-          phone, 
-          password 
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
       });
-
-      if (response.status === 200) {
-        console.log('Registration successful');
-        //window.location.href = '/login';
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log('User registered:', data);
       } else {
-        console.error('Registration failed');
+        const error = await response.json();
+        console.error('Error:', error);
       }
     } catch (err) {
       console.error('Error:', err);
@@ -77,6 +72,7 @@ const Register = () => {
               required
             />
           </div>
+
 
           <div className="form-group">
             <label htmlFor="password">סיסמה:</label>
