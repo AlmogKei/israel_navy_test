@@ -13,11 +13,6 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (password !== confirmPass) {
-      setError('הסיסמאות אינן תואמות');
-      return;
-    }
-
     try {
       const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
         method: 'POST',
@@ -25,37 +20,21 @@ const Register = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          fullName,  // שים לב שהשארתי את השם המקורי כפי שהוא בקוד שלך
+          fullName,
           email,
           phone,
           password
         })
       });
 
-      // אם הסטטוס הוא 200 והתגובה ריקה, זה אומר שההרשמה הצליחה
       if (response.status === 200) {
         console.log('Registration successful');
-        // ניווט לדף ההתחברות
         window.location.href = '/login';
-        return;
-      }
-
-      // אם הגענו לכאן ויש תוכן, ננסה לפרסר אותו
-      const responseText = await response.text();
-      if (responseText) {
-        const data = JSON.parse(responseText);
-        if (!response.ok) {
-          setError(data.message || 'שגיאה ברישום');
-        }
       } else {
-        if (!response.ok) {
-          setError('שגיאה ברישום');
-        }
+        console.error('Registration failed');
       }
-
     } catch (err) {
       console.error('Error:', err);
-      setError('שגיאה בתהליך ההרשמה. אנא נסה שוב.');
     }
   };
 
