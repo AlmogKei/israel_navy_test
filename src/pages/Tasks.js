@@ -62,17 +62,21 @@ const Tasks = () => {
       const response = await fetch(`https://israel-navy-test.onrender.com/users/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editedTask),
+        body: JSON.stringify({
+          task_name: editedTask.task_name,
+          task_value: Number(editedTask.task_value)  // המרה למספר
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update task');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update task');
       }
 
       const updatedTask = await response.json();
-      setTasks(tasks.map(task =>
-        task.id === taskId ? updatedTask : task
-      ));
+      setTasks(prevTasks =>
+        prevTasks.map(task => task.id === taskId ? updatedTask : task)
+      );
       setEditTaskId(null);
       setEditedTask({ task_name: '', task_value: '' });
 
@@ -97,13 +101,17 @@ const Tasks = () => {
     try {
       const response = await fetch(`https://israel-navy-test.onrender.com/users/tasks/${taskId}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
       });
 
-      if (response.ok) {
-        setTasks(tasks.filter((task) => task.id !== taskId));
-      } else {
-        throw new Error('Failed to delete task');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete task');
       }
+
+      setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+      setError(null);  // ניקוי הודעות שגיאה קודמות
+
     } catch (error) {
       console.error('Error deleting task:', error);
       setError(error.message);
@@ -122,17 +130,19 @@ const Tasks = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...newTask,
-          user_id: userId
+          task_name: newTask.task_name,
+          task_value: Number(newTask.task_value),  // המרה למספר
+          user_id: Number(userId)  // המרה למספר
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to add task');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add task');
       }
 
       const addedTask = await response.json();
-      setTasks([...tasks, addedTask]);
+      setTasks(prevTasks => [...prevTasks, addedTask]);
       setShowAddModal(false);
       setNewTask({ task_name: '', task_value: '' });
 
@@ -208,7 +218,7 @@ const Tasks = () => {
         </button>
       </div>
 
-      
+
       {showAddModal && (
         <div className="modal">
           <div className="modal-content">

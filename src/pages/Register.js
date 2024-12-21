@@ -38,7 +38,7 @@ const Register = () => {
 
       if (response.status === 200 || response.status === 201) {
         alert('נרשמת בהצלחה!');
-        window.location.href = 'https://israel-navy-test.onrender.com/';
+        window.location.href = 'https://israel-navy-test.onrender.com/users/login';
         return;
       } else {
         alert('שגיאה בהרשמה');
