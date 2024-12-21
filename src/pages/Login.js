@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 
+const API_URL = 'https://israel-navy-test.onrender.com';
+
 const Login = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -18,7 +20,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('https://israel-navy-test.onrender.com/users/login', {
+      const response = await fetch('${API_URL}/users/login', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json'
@@ -40,11 +42,11 @@ const Login = () => {
           if (data.userId) {
             navigate(`/tasks/${data.userId}`);
           } else {
-            window.location.href = 'https://israel-navy-test.onrender.com/tasks/1';
+            window.location.href = '${API_URL}/tasks/1';
           }
         } catch (parseError) {
           // אם אין JSON תקין, ננסה ניווט ברירת מחדל
-          window.location.href = 'https://israel-navy-test.onrender.com/tasks/1';
+          window.location.href = '${API_URL}/tasks/1';
         }
       } else {
         setError('שם משתמש או סיסמה שגויים');

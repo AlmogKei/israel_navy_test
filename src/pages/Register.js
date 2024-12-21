@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Register.css';
 
+const API_URL = 'https://israel-navy-test.onrender.com';
+
 const Register = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -21,7 +23,7 @@ const Register = () => {
     try {
       console.log('Sending data:', { full_name: fullName, email, phone, password });
 
-      const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
+      const response = await fetch('${API_URL}/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -38,7 +40,7 @@ const Register = () => {
 
       if (response.status === 200 || response.status === 201) {
         alert('נרשמת בהצלחה!');
-        window.location.href = 'https://israel-navy-test.onrender.com/users/login';
+        window.location.href = '${API_URL}/users/login';
         return;
       } else {
         alert('שגיאה בהרשמה');
