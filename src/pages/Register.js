@@ -11,24 +11,37 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    const userData = { 
+      fullName, 
+      email, 
+      phone, 
+      password 
+    };
+    
+    console.log('Sending registration data:', userData);
 
     try {
       const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
         method: 'POST',
-        headers: {
+        headers: { 
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          fullName,
-          email,
-          phone,
-          password
-        })
+        body: JSON.stringify(userData)
       });
+
+      console.log('Server response status:', response.status);
+      
+      try {
+        const responseText = await response.text();
+        console.log('Server response:', responseText);
+      } catch (error) {
+        console.log('Could not read response text:', error);
+      }
 
       if (response.status === 200) {
         alert('נרשמת בהצלחה!');
-        window.location.href = 'https://israel-navy-test.onrender.com/users/login';  // הכתובת המלאה
+        window.location.href = 'https://israel-navy-test.onrender.com/';
         return;
       }
 
@@ -107,7 +120,7 @@ const Register = () => {
           <button type="submit" className="btn register-btn">הרשמה</button>
         </form>
         <p className="login-link">
-          כבר רשום/ה? <Link to="https://israel-navy-test.onrender.com/users/login">התחבר/י כאן</Link>
+          כבר רשום/ה? <Link to="/">התחבר/י כאן</Link>
         </p>
       </div>
     </div>
