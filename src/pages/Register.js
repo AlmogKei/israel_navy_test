@@ -14,7 +14,7 @@ const Register = () => {
     e.preventDefault();
   
     try {
-      const response = await fetch('http://localhost:3000/users/register', {
+      const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
