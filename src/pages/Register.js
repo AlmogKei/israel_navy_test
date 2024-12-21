@@ -9,7 +9,6 @@ const Register = () => {
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
 
-  // send the details to the docker server
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -27,14 +26,18 @@ const Register = () => {
         })
       });
 
+      // אם התגובה הצליחה, ננווט ישירות ללא ניסיון לקרוא JSON
       if (response.status === 200) {
         console.log('Registration successful');
-        window.location.href = '/login';
-      } else {
-        console.error('Registration failed');
+        navigate('/login');  // שימוש ב-navigate במקום window.location
+        return;
       }
+
+      // אם יש שגיאה, נציג אותה
+      console.error('Registration failed');
+
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Network error:', err);
     }
   };
 
@@ -79,7 +82,6 @@ const Register = () => {
             />
           </div>
 
-
           <div className="form-group">
             <label htmlFor="password">סיסמה:</label>
             <input
@@ -107,7 +109,7 @@ const Register = () => {
           <button type="submit" className="btn register-btn">הרשמה</button>
         </form>
         <p className="login-link">
-          כבר רשום/ה? <Link to="/users/login">התחבר/י כאן</Link>
+          כבר רשום/ה? <Link to="/login">התחבר/י כאן</Link>
         </p>
       </div>
     </div>
