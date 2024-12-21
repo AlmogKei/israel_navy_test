@@ -14,11 +14,13 @@ const Register = () => {
     e.preventDefault();
 
     if (password !== confirmPass) {
-      console.error('Passwords do not match');
+      alert('הסיסמאות אינן תואמות');
       return;
     }
 
     try {
+      console.log('Sending data:', { full_name: fullName, email, phone, password });
+
       const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
         method: 'POST',
         headers: {
@@ -32,24 +34,18 @@ const Register = () => {
         })
       });
 
-      // בדיקת התגובה לפני ניסיון לקרוא כ-JSON
-      const responseText = await response.text();
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (err) {
-        console.log('Raw response:', responseText);
-        throw new Error('Invalid JSON response from server');
-      }
+      console.log('Response status:', response.status);
 
-      if (response.ok) {
-        console.log('User registered:', data);
-        window.location.href = '/login';
+      if (response.status === 200 || response.status === 201) {
+        alert('נרשמת בהצלחה!');
+        window.location.href = 'https://israel-navy-test.onrender.com/';
+        return;
       } else {
-        console.error('Registration error:', data);
+        alert('שגיאה בהרשמה');
       }
     } catch (err) {
-      console.error('Error:', err.message);
+      console.error('Error:', err);
+      alert('שגיאת רשת');
     }
   };
 
