@@ -5,7 +5,13 @@ const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
-app.use(cors());
+// הגדרות CORS מעודכנות
+app.use(cors({
+  origin: ['http://localhost:3001', 'https://israel-navy-test.onrender.com/'],  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 (async () => {
@@ -13,13 +19,11 @@ app.use(express.json());
     await AppDataSource.initialize();
     console.log('Database connected!');
 
-
     app.use('/users', userRoutes);
 
-    // starting the server
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {
     console.error('Error during initialization:', error);
