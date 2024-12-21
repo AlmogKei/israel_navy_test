@@ -6,7 +6,7 @@ const userRoutes = require('./routes/userRoutes');
 const app = express();
 
 app.use(cors({
-  origin: '*',
+  origin: 'https://israel-navy-test.onrender.com',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   credentials: true
