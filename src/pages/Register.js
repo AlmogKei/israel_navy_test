@@ -27,8 +27,8 @@ const Register = () => {
       });
 
       if (response.status === 200) {
-        alert('נרשמת בהצלחה!'); // הודעה למשתמש
-        window.location.href = '/users/login';  // תיקון - הסרת 'users' מהנתיב
+        alert('נרשמת בהצלחה!');
+        window.location.href = 'https://israel-navy-test.onrender.com/users/login';  // הכתובת המלאה
         return;
       }
 
@@ -107,7 +107,7 @@ const Register = () => {
           <button type="submit" className="btn register-btn">הרשמה</button>
         </form>
         <p className="login-link">
-          כבר רשום/ה? <Link to="/users/login">התחבר/י כאן</Link>
+          כבר רשום/ה? <Link to="https://israel-navy-test.onrender.com/users/login">התחבר/י כאן</Link>
         </p>
       </div>
     </div>
