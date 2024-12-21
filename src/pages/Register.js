@@ -14,57 +14,48 @@ const Register = () => {
     e.preventDefault();
 
     if (password !== confirmPass) {
-      console.error('Passwords do not match');
+      setError('הסיסמאות אינן תואמות');
       return;
     }
 
     try {
-      console.log('Sending request with data:', {
-        full_name: fullName,
-        email,
-        phone,
-        password
-      });
-
       const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          full_name: fullName,
+          fullName,  // שים לב שהשארתי את השם המקורי כפי שהוא בקוד שלך
           email,
           phone,
           password
         })
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers));
+      // אם הסטטוס הוא 200 והתגובה ריקה, זה אומר שההרשמה הצליחה
+      if (response.status === 200) {
+        console.log('Registration successful');
+        // ניווט לדף ההתחברות
+        window.location.href = '/login';
+        return;
+      }
 
+      // אם הגענו לכאן ויש תוכן, ננסה לפרסר אותו
       const responseText = await response.text();
-      console.log('Raw response:', responseText);
-
       if (responseText) {
-        try {
-          const data = JSON.parse(responseText);
-          console.log('Parsed response:', data);
-
-          if (response.ok) {
-            console.log('Registration successful');
-            window.location.href = '/login';
-          } else {
-            console.error('Registration failed:', data);
-          }
-        } catch (jsonError) {
-          console.error('Failed to parse response as JSON:', jsonError);
+        const data = JSON.parse(responseText);
+        if (!response.ok) {
+          setError(data.message || 'שגיאה ברישום');
         }
       } else {
-        console.log('Empty response received');
+        if (!response.ok) {
+          setError('שגיאה ברישום');
+        }
       }
 
     } catch (err) {
-      console.error('Network error:', err);
+      console.error('Error:', err);
+      setError('שגיאה בתהליך ההרשמה. אנא נסה שוב.');
     }
   };
 
