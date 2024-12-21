@@ -7,27 +7,37 @@ const taskRepository = require('../repositories/taskRepository');
 const router = express.Router();
 
 // Register a new user
-router.post('/register', async (req, res) => { 
+router.post('/register', async (req, res) => {
   try {
     const { fullName, email, phone, password } = req.body;
-    console.log('Registration attempt:', { fullName, email, phone });
 
+    console.log('Request received:', { fullName, email, phone, password });
+
+    // Validation
     if (!fullName || !email || !phone || !password) {
-      console.log('Missing required fields');
+      console.log('Validation failed');
       return res.status(400).json({ error: 'All fields are required' });
     }
 
+    console.log('Validation passed');
+
     const userRepository = AppDataSource.getRepository(User);
+
+    // Check if email already exists
     const existingUser = await userRepository.findOne({ where: { email } });
-    
     if (existingUser) {
-      console.log('Email already exists:', email);
+      console.log('Email already registered:', email);
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    console.log('Password hashed successfully');
+    console.log('Email is unique, proceeding to hash password');
 
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    console.log('Password hashed, creating new user');
+
+    // Create new user
     const newUser = userRepository.create({
       fullName,
       email,
@@ -35,17 +45,15 @@ router.post('/register', async (req, res) => {
       password_hash: hashedPassword,
     });
 
-    const savedUser = await userRepository.save(newUser);
-    console.log('User saved successfully:', savedUser.id);
+    await userRepository.save(newUser);
 
-    return res.status(201).json({ 
-      message: 'User registered successfully', 
-      userId: savedUser.id 
-    });
+    console.log('User registered successfully:', newUser);
 
-  } catch (error) {
-    console.error('Registration error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    res.status(201).json({ message: 'User registered successfully', userId: newUser.id });
+  } catch (err) {
+    console.error('Error during registration:', err.message);
+    console.error('Full error stack:', err.stack);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
