@@ -1,14 +1,12 @@
 require('dotenv').config();
 
-
 module.exports = {
   type: 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT, 10) || 5432,
-  username: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'development',
+  url: process.env.DATABASE_URL || 'postgresql://development_mbkc_user:VID2LjAmMPnNNtfbTPCkMVxycGAkLXVu@dpg-ctjktstumphs73fbs4g0-a/development_mbkc',
+  ssl: {
+    rejectUnauthorized: false
+  },
   synchronize: true,
-  logging: false,
+  logging: true, // שיניתי ל-true כדי לראות את ה-queries בזמן פיתוח
   entities: ['src/entities/*.js'],
 };
