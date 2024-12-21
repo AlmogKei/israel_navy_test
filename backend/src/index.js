@@ -5,7 +5,13 @@ const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://israel-navy-test.onrender.com', // או הדומיין הספציפי של הפרונטאנד
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 (async () => {
