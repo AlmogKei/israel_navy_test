@@ -19,6 +19,13 @@ const Register = () => {
     }
 
     try {
+      console.log('Sending request with data:', {
+        full_name: fullName,
+        email,
+        phone,
+        password
+      });
+
       const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
         method: 'POST',
         headers: {
@@ -32,24 +39,32 @@ const Register = () => {
         })
       });
 
-      // בדיקת התגובה לפני ניסיון לקרוא כ-JSON
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers));
+
       const responseText = await response.text();
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (err) {
-        console.log('Raw response:', responseText);
-        throw new Error('Invalid JSON response from server');
+      console.log('Raw response:', responseText);
+
+      if (responseText) {
+        try {
+          const data = JSON.parse(responseText);
+          console.log('Parsed response:', data);
+
+          if (response.ok) {
+            console.log('Registration successful');
+            window.location.href = '/login';
+          } else {
+            console.error('Registration failed:', data);
+          }
+        } catch (jsonError) {
+          console.error('Failed to parse response as JSON:', jsonError);
+        }
+      } else {
+        console.log('Empty response received');
       }
 
-      if (response.ok) {
-        console.log('User registered:', data);
-        window.location.href = '/login';
-      } else {
-        console.error('Registration error:', data);
-      }
     } catch (err) {
-      console.error('Error:', err.message);
+      console.error('Network error:', err);
     }
   };
 
