@@ -12,34 +12,30 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const userData = {
-      fullName,
-      email,
-      phone,
-      password
-    };
-
     try {
       const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(userData)
+        body: JSON.stringify({
+          fullName,
+          email,
+          phone,
+          password
+        })
       });
 
-      if (response.status === 200 || response.status === 201) {
+      if (response.status === 200) {
         alert('נרשמת בהצלחה!');
-        // שינוי הניווט
-        window.location.replace('https://israel-navy-test.onrender.com/users/login');
-      } else {
-        const errorData = await response.json();
-        alert(errorData.error || 'Registration failed');
+        window.location.href = 'https://israel-navy-test.onrender.com/users/login';  // הכתובת המלאה
+        return;
       }
+
+      console.error('Registration failed');
 
     } catch (err) {
       console.error('Network error:', err);
-      alert('שגיאת רשת, אנא נסה שוב');
     }
   };
 
@@ -111,7 +107,7 @@ const Register = () => {
           <button type="submit" className="btn register-btn">הרשמה</button>
         </form>
         <p className="login-link">
-          כבר רשום/ה? <Link to="/users/login">התחבר/י כאן</Link>
+          כבר רשום/ה? <Link to="https://israel-navy-test.onrender.com/users/login">התחבר/י כאן</Link>
         </p>
       </div>
     </div>
