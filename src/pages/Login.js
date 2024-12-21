@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 
-const API_URL = 'https://israel-navy-test.onrender.com';
-
 
 const Login = () => {
   const [identifier, setIdentifier] = useState('');
@@ -19,7 +17,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('${API_URL}/users/login', {
+      const response = await fetch('https://israel-navy-test.onrender.com/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: identifier, password }),

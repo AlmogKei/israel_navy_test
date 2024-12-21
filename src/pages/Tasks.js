@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import '../styles/Tasks.css';
 
-const API_URL = 'https://israel-navy-test.onrender.com';
 
 const Tasks = () => {
   const { userId } = useParams();
@@ -26,7 +25,7 @@ const Tasks = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch(`${API_URL}/users/tasks/${userId}`);
+      const response = await fetch(`https://israel-navy-test.onrender.com/users/tasks/${userId}`);
       const data = await response.json();
 
       if (response.ok) {
@@ -60,7 +59,7 @@ const Tasks = () => {
   // save edit
   const handleSaveEdit = async (taskId) => {
     try {
-      const response = await fetch(`${API_URL}/users/tasks/${taskId}`, {
+      const response = await fetch(`https://israel-navy-test.onrender.com/users/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editedTask),
@@ -96,7 +95,7 @@ const Tasks = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/users/tasks/${taskId}`, {
+      const response = await fetch(`https://israel-navy-test.onrender.com/users/tasks/${taskId}`, {
         method: 'DELETE',
       });
 
@@ -119,7 +118,7 @@ const Tasks = () => {
         return;
       }
 
-      const response = await fetch('${API_URL}/users/tasks', {
+      const response = await fetch('https://israel-navy-test.onrender.com/users/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

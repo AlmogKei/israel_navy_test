@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Register.css';
 
-const API_URL = 'https://israel-navy-test.onrender.com';
-
 const Register = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -15,24 +13,34 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    try {
-      const response = await fetch(`${API_URL}/users/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
-      });
-  
-      if (response.ok) {
-        const data = await response.json();
-        console.log('User registered:', data);
-      } else {
-        const error = await response.json();
-        console.error('Error:', error);
-      }
-    } catch (err) {
-      console.error('Error:', err);
+    if (password !== confirmPass) {
+        console.error('Passwords do not match');
+        return;
     }
-  };
+
+    try {
+        const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
+        });
+  
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log('User registered:', data);
+            // ניווט לדף ההתחברות אחרי הרשמה מוצלחת
+            navigate('/login');
+        } else {
+            console.error('Registration error:', data);
+        }
+    } catch (err) {
+        console.error('Error:', err);
+    }
+};
 
   return (
     <div className="register-container">
