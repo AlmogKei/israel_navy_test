@@ -13,34 +13,24 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    if (password !== confirmPass) {
-        console.error('Passwords do not match');
-        return;
-    }
-
     try {
-        const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
-        });
+      const response = await fetch('http://localhost:3000/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
+      });
   
+      if (response.ok) {
         const data = await response.json();
-
-        if (response.ok) {
-            console.log('User registered:', data);
-            // ניווט לדף ההתחברות אחרי הרשמה מוצלחת
-            navigate('/login');
-        } else {
-            console.error('Registration error:', data);
-        }
+        console.log('User registered:', data);
+      } else {
+        const error = await response.json();
+        console.error('Error:', error);
+      }
     } catch (err) {
-        console.error('Error:', err);
+      console.error('Error:', err);
     }
-};
+  };
 
   return (
     <div className="register-container">
