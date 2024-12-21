@@ -9,6 +9,6 @@ module.exports = {
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'development',
   synchronize: true,
-  logging: true,
+  logging: false,
   entities: ['src/entities/*.js'],
 };
