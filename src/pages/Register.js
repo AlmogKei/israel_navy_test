@@ -28,7 +28,7 @@ const Register = () => {
 
       if (response.status === 200) {
         console.log('Registration successful');
-        window.location.href = '/login';
+        window.location.href = '/users/login';
         return;
       }
 
@@ -107,7 +107,7 @@ const Register = () => {
           <button type="submit" className="btn register-btn">הרשמה</button>
         </form>
         <p className="login-link">
-          כבר רשום/ה? <Link to="/login">התחבר/י כאן</Link>
+          כבר רשום/ה? <Link to="/users/login">התחבר/י כאן</Link>
         </p>
       </div>
     </div>
