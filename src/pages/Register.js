@@ -12,23 +12,44 @@ const Register = () => {
   // send the details to the docker server
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
+    if (password !== confirmPass) {
+      console.error('Passwords do not match');
+      return;
+    }
+
     try {
       const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          full_name: fullName,
+          email,
+          phone,
+          password
+        })
       });
-  
+
+      // בדיקת התגובה לפני ניסיון לקרוא כ-JSON
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (err) {
+        console.log('Raw response:', responseText);
+        throw new Error('Invalid JSON response from server');
+      }
+
       if (response.ok) {
-        const data = await response.json();
         console.log('User registered:', data);
+        window.location.href = '/login';
       } else {
-        const error = await response.json();
-        console.error('Error:', error);
+        console.error('Registration error:', data);
       }
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Error:', err.message);
     }
   };
 
