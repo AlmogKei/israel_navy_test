@@ -9,56 +9,33 @@ const Register = () => {
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
 
-  // send the details to the docker server
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    if (password !== confirmPass) {
-        setError('הסיסמאות אינן תואמות');
-        return;
-    }
-
     try {
-        const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                fullName,  // שים לב שהשארתי את השם המקורי כפי שהוא בקוד שלך
-                email, 
-                phone, 
-                password 
-            })
-        });
+      const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          fullName, 
+          email, 
+          phone, 
+          password 
+        })
+      });
 
-        // אם הסטטוס הוא 200 והתגובה ריקה, זה אומר שההרשמה הצליחה
-        if (response.status === 200) {
-            console.log('Registration successful');
-            alert('נרשמת בהצלחה!');
-            // ניווט לדף ההתחברות
-            window.location.href = '/users/login';
-            return;
-        }
-
-        // אם הגענו לכאן ויש תוכן, ננסה לפרסר אותו
-        const responseText = await response.text();
-        if (responseText) {
-            const data = JSON.parse(responseText);
-            if (!response.ok) {
-                setError(data.message || 'שגיאה ברישום');
-            }
-        } else {
-            if (!response.ok) {
-                setError('שגיאה ברישום');
-            }
-        }
-
+      if (response.status === 200) {
+        console.log('Registration successful');
+        window.location.href = '/login';
+      } else {
+        console.error('Registration failed');
+      }
     } catch (err) {
-        console.error('Error:', err);
-        setError('שגיאה בתהליך ההרשמה. אנא נסה שוב.');
+      console.error('Error:', err);
     }
-};
+  };
 
   return (
     <div className="register-container">
@@ -101,7 +78,6 @@ const Register = () => {
             />
           </div>
 
-
           <div className="form-group">
             <label htmlFor="password">סיסמה:</label>
             <input
@@ -129,7 +105,7 @@ const Register = () => {
           <button type="submit" className="btn register-btn">הרשמה</button>
         </form>
         <p className="login-link">
-          כבר רשום/ה? <Link to="/users/login">התחבר/י כאן</Link>
+          כבר רשום/ה? <Link to="/login">התחבר/י כאן</Link>
         </p>
       </div>
     </div>
