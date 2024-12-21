@@ -2,38 +2,56 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 
-
 const Login = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
 
     if (!identifier || !password) {
-      console.error('Email and password are required');
+      setError('יש להזין אימייל וסיסמה');
       return;
     }
 
     try {
       const response = await fetch('https://israel-navy-test.onrender.com/users/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: identifier, password }),
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          email: identifier, 
+          password 
+        })
       });
 
-      const data = await response.json();
+      console.log('Response status:', response.status);
 
-      if (!response.ok) {
-        console.error('Login error:', data);
-        return;
+      if (response.status === 200 || response.status === 201) {
+        // בדיקה אם יש תוכן בתגובה
+        try {
+          const text = await response.text();
+          const data = text ? JSON.parse(text) : {};
+          
+          if (data.userId) {
+            navigate(`/tasks/${data.userId}`);
+          } else {
+            window.location.href = 'https://israel-navy-test.onrender.com/tasks/1';
+          }
+        } catch (parseError) {
+          // אם אין JSON תקין, ננסה ניווט ברירת מחדל
+          window.location.href = 'https://israel-navy-test.onrender.com/tasks/1';
+        }
+      } else {
+        setError('שם משתמש או סיסמה שגויים');
       }
-
-      console.log('Login successful:', data);
-      navigate(`/tasks/${data.userId}`);
     } catch (error) {
       console.error('Network error:', error);
+      setError('שגיאת התחברות, אנא נסה שוב');
     }
   };
 
@@ -41,11 +59,12 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <h2 className="login-title">התחברות</h2>
+        {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleLogin} className="login-form">
           <div className="form-group">
             <label>אימייל :</label>
             <input
-              type="text"
+              type="email"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               placeholder="הזן אימייל"
@@ -65,7 +84,7 @@ const Login = () => {
           <button type="submit" className="login-btn">התחבר</button>
         </form>
         <div className="forgot-password-link">
-          <a href="/ForgotPassword">שכחתי סיסמה</a>
+          <a href="/">שכחתי סיסמה</a>
         </div>
       </div>
     </div>
