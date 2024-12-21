@@ -10,42 +10,41 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
   try {
     const { fullName, email, phone, password } = req.body;
-    console.log('Registration attempt:', { fullName, email, phone });
-
-    if (!fullName || !email || !phone || !password) {
-      console.log('Missing required fields');
-      return res.status(400).json({ error: 'All fields are required' });
-    }
+    console.log('Received registration request:', { fullName, email, phone });
 
     const userRepository = AppDataSource.getRepository(User);
-    const existingUser = await userRepository.findOne({ where: { email } });
 
+    // בדיקת משתמש קיים
+    const existingUser = await userRepository.findOne({ where: { email } });
     if (existingUser) {
-      console.log('Email already exists:', email);
+      console.log('User already exists:', email);
       return res.status(400).json({ error: 'Email already registered' });
     }
 
+    // הצפנת סיסמה
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log('Password hashed successfully');
 
+    // יצירת משתמש חדש
     const newUser = userRepository.create({
       fullName,
       email,
       phone,
-      password_hash: hashedPassword,
+      password_hash: hashedPassword
     });
 
+    // שמירת המשתמש
     const savedUser = await userRepository.save(newUser);
-    console.log('User saved successfully:', savedUser.id);
+    console.log('Successfully saved user:', savedUser.id);
 
-    return res.status(201).json({
-      message: 'User registered successfully',
+    // שליחת תשובה
+    res.status(201).json({
+      message: 'Registration successful',
       userId: savedUser.id
     });
 
-  } catch (error) {
-    console.error('Registration error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+  } catch (err) {
+    console.error('Registration error:', err);
+    res.status(500).json({ error: 'Server error during registration' });
   }
 });
 
