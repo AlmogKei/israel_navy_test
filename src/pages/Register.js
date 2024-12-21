@@ -11,44 +11,35 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    const userData = { 
-      fullName, 
-      email, 
-      phone, 
-      password 
+
+    const userData = {
+      fullName,
+      email,
+      phone,
+      password
     };
-    
-    console.log('Sending registration data:', userData);
 
     try {
       const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(userData)
       });
 
-      console.log('Server response status:', response.status);
-      
-      try {
-        const responseText = await response.text();
-        console.log('Server response:', responseText);
-      } catch (error) {
-        console.log('Could not read response text:', error);
-      }
-
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 201) {
         alert('נרשמת בהצלחה!');
-        window.location.href = 'https://israel-navy-test.onrender.com/users/login';
-        return;
+        // שינוי הניווט
+        window.location.replace('https://israel-navy-test.onrender.com/users/login');
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Registration failed');
       }
-
-      console.error('Registration failed');
 
     } catch (err) {
       console.error('Network error:', err);
+      alert('שגיאת רשת, אנא נסה שוב');
     }
   };
 
