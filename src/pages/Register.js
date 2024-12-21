@@ -9,35 +9,56 @@ const Register = () => {
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
 
+  // send the details to the docker server
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    if (password !== confirmPass) {
+        setError('הסיסמאות אינן תואמות');
+        return;
+    }
 
     try {
-      const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          fullName,
-          email,
-          phone,
-          password
-        })
-      });
+        const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                fullName,  // שים לב שהשארתי את השם המקורי כפי שהוא בקוד שלך
+                email, 
+                phone, 
+                password 
+            })
+        });
 
-      if (response.status === 200) {
-        alert('נרשמת בהצלחה!');
-        window.location.href = 'https://israel-navy-test.onrender.com/users/login';  // הכתובת המלאה
-        return;
-      }
+        // אם הסטטוס הוא 200 והתגובה ריקה, זה אומר שההרשמה הצליחה
+        if (response.status === 200) {
+            console.log('Registration successful');
+            alert('נרשמת בהצלחה!');
+            // ניווט לדף ההתחברות
+            window.location.href = '/users/login';
+            return;
+        }
 
-      console.error('Registration failed');
+        // אם הגענו לכאן ויש תוכן, ננסה לפרסר אותו
+        const responseText = await response.text();
+        if (responseText) {
+            const data = JSON.parse(responseText);
+            if (!response.ok) {
+                setError(data.message || 'שגיאה ברישום');
+            }
+        } else {
+            if (!response.ok) {
+                setError('שגיאה ברישום');
+            }
+        }
 
     } catch (err) {
-      console.error('Network error:', err);
+        console.error('Error:', err);
+        setError('שגיאה בתהליך ההרשמה. אנא נסה שוב.');
     }
-  };
+};
 
   return (
     <div className="register-container">
@@ -80,6 +101,7 @@ const Register = () => {
             />
           </div>
 
+
           <div className="form-group">
             <label htmlFor="password">סיסמה:</label>
             <input
@@ -107,7 +129,7 @@ const Register = () => {
           <button type="submit" className="btn register-btn">הרשמה</button>
         </form>
         <p className="login-link">
-          כבר רשום/ה? <Link to="https://israel-navy-test.onrender.com/users/login">התחבר/י כאן</Link>
+          כבר רשום/ה? <Link to="/users/login">התחבר/י כאן</Link>
         </p>
       </div>
     </div>
