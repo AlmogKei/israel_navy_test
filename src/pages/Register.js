@@ -23,7 +23,7 @@ const Register = () => {
     try {
       console.log('Sending data:', { full_name: fullName, email, phone, password });
 
-      const response = await fetch('${API_URL}/users/register', {
+      const response = await fetch(`${API_URL}/users/register`, {  // תיקון כאן - גרשיים מעוגלות במקום רגילות
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -40,7 +40,7 @@ const Register = () => {
 
       if (response.status === 200 || response.status === 201) {
         alert('נרשמת בהצלחה!');
-        window.location.href = '${API_URL}/users/login';
+        window.location.href = `${API_URL}/users/login`;  // תיקון כאן - גרשיים מעוגלות
         return;
       } else {
         alert('שגיאה בהרשמה');
