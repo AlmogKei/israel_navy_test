@@ -54,37 +54,23 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.get('/test', async (req, res) => {
-  try {
-    const { rows } = await pool.query('SELECT id, email FROM users');
-    console.log('Test query result:', rows);
-    res.json({
-      success: true,
-      users: rows
-    });
-  } catch (error) {
-    console.error('Test route error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// Login user
+// Login users
 router.post('/login', async (req, res) => {
   console.log('Login attempt with:', req.body);
 
   try {
     const { email, password } = req.body;
 
-    // בדיקת משתמש
+    // שימוש בשם העמודה הנכון
     const { rows } = await pool.query(
-      'SELECT * FROM users WHERE email = $1',
+      'SELECT id, email, "fullName", password_hash FROM users WHERE email = $1',
       [email]
     );
 
-    console.log('Found user:', rows[0] ? 'Yes' : 'No');
+    console.log('Query result:', {
+      found: rows.length > 0,
+      email: rows[0]?.email
+    });
 
     if (rows.length === 0) {
       return res.status(401).json({
@@ -95,6 +81,8 @@ router.post('/login', async (req, res) => {
 
     const user = rows[0];
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
+
+    console.log('Password validation:', { isValid: isValidPassword });
 
     if (!isValidPassword) {
       return res.status(401).json({
@@ -107,7 +95,7 @@ router.post('/login', async (req, res) => {
       success: true,
       id: user.id,
       email: user.email,
-      fullName: user.fullname
+      fullName: user.fullName  // שימוש בשם העמודה הנכון
     });
 
   } catch (error) {
@@ -116,6 +104,29 @@ router.post('/login', async (req, res) => {
       success: false,
       error: 'שגיאת שרת',
       details: error.message
+    });
+  }
+});
+
+// נתיב בדיקה
+router.get('/test', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+          SELECT id, email, "fullName"
+          FROM users
+          ORDER BY id DESC
+          LIMIT 5
+      `);
+
+    res.json({
+      success: true,
+      users: rows
+    });
+  } catch (error) {
+    console.error('Test route error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 });

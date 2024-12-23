@@ -1,6 +1,5 @@
 const { Pool } = require('pg');
 
-// הגדרות החיבור
 const pool = new Pool({
   user: 'development_mbkc_user',
   password: 'VID2LjAmMPnNNtfbTPCkMVxycGAkLXVu',
@@ -12,25 +11,31 @@ const pool = new Pool({
   }
 });
 
-// פונקציית בדיקת חיבור
+// פונקציית בדיקה
 const testConnection = async () => {
   let client;
   try {
-    // בדיקת חיבור
     client = await pool.connect();
     console.log('Successfully connected to database');
 
-    // בדיקת טבלת משתמשים
-    const { rows } = await client.query(`
-            SELECT id, email, fullname 
+    // בדיקת מבנה הטבלה
+    const tableInfo = await client.query(`
+            SELECT column_name, data_type 
+            FROM information_schema.columns 
+            WHERE table_name = 'users'
+        `);
+    console.log('Table columns:', tableInfo.rows);
+
+    // בדיקת נתונים
+    const usersQuery = await client.query(`
+            SELECT id, email, "fullName"
             FROM users 
             ORDER BY id DESC 
             LIMIT 5
         `);
+    console.log('Sample users:', usersQuery.rows);
 
-    console.log('Found users:', rows);
     return true;
-
   } catch (error) {
     console.error('Database connection error:', error);
     return false;
@@ -41,13 +46,6 @@ const testConnection = async () => {
   }
 };
 
-// בדיקת חיבור בהתחלה
-testConnection()
-  .then(success => {
-    if (!success) {
-      console.error('Failed to connect to database');
-      process.exit(1);
-    }
-  });
+testConnection();
 
 module.exports = pool;
