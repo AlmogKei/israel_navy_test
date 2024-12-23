@@ -14,44 +14,58 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
-    if (!identifier || !password) {
-      setError('יש להזין אימייל וסיסמה');
-      return;
-    }
-
     try {
-      console.log('Attempting login for:', identifier);
+      const loginUrl = `${API_URL}/users/login`;
+      console.log('Sending request to:', loginUrl);
 
-      const response = await fetch(`${API_URL}/users/login`, {
+      const requestData = {
+        email: identifier,
+        password
+      };
+      console.log('Request data:', { email: requestData.email });
+
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          email: identifier,
-          password
-        })
+        body: JSON.stringify(requestData)
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers));
+
+      // קריאת התשובה כטקסט
       const text = await response.text();
       console.log('Raw response:', text);
 
+      // אם אין תוכן
       if (!text) {
+        console.error('Empty response received');
         throw new Error('לא התקבלה תשובה מהשרת');
       }
 
-      const data = JSON.parse(text);
-      console.log('Parsed response:', data);
-
-      if (data.error) {
-        throw new Error(data.error);
+      // ניסיון לפרסר את התשובה
+      let data;
+      try {
+        data = JSON.parse(text);
+        console.log('Parsed response:', data);
+      } catch (e) {
+        console.error('Parse error:', e);
+        throw new Error('תשובה לא תקינה מהשרת');
       }
 
+      // בדיקת שגיאות
+      if (response.status >= 400) {
+        throw new Error(data.error || 'שגיאת התחברות');
+      }
+
+      // בדיקת מזהה משתמש
       if (!data.id) {
         throw new Error('חסר מזהה משתמש בתשובה מהשרת');
       }
 
-      console.log('Login successful, navigating to tasks');
+      // ניווט למסך המשימות
       navigate(`/users/tasks/${data.id}`);
 
     } catch (error) {
