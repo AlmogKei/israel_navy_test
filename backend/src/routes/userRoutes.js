@@ -57,36 +57,44 @@ router.post('/register', async (req, res) => {
 
 // Login user
 router.post('/login', async (req, res) => {
-  console.log('Login request received:', req.body);
+  console.log('Login attempt with:', {
+    email: req.body.email,
+    timestamp: new Date().toISOString()
+  });
 
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        error: 'נדרש אימייל וסיסמה'
-      });
-    }
+    // שאילתה לבדיקת המשתמש
+    const userQuery = {
+      text: 'SELECT * FROM users WHERE email = $1',
+      values: [email]
+    };
 
-    // שימוש ב-pool במקום db
-    const result = await pool.query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
-    );
+    console.log('Executing query:', {
+      query: userQuery.text,
+      email: email
+    });
 
-    const user = result.rows[0];
+    const result = await pool.query(userQuery);
 
-    if (!user) {
+    console.log('Query result:', {
+      rowCount: result.rowCount,
+      hasUser: result.rows.length > 0,
+      userEmail: result.rows[0]?.email
+    });
+
+    if (result.rows.length === 0) {
       return res.status(401).json({
         success: false,
         error: 'משתמש לא קיים'
       });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    const user = result.rows[0];
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
-    if (!isPasswordValid) {
+    if (!isValidPassword) {
       return res.status(401).json({
         success: false,
         error: 'סיסמה שגויה'
@@ -106,6 +114,23 @@ router.post('/login', async (req, res) => {
       success: false,
       error: 'שגיאת שרת',
       details: error.message
+    });
+  }
+});
+
+// נוסיף נתיב בדיקה
+router.get('/check-users', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, email FROM users');
+    return res.json({
+      success: true,
+      userCount: result.rows.length,
+      users: result.rows
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 });
