@@ -20,11 +20,11 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/users/login`, { // תיקון כאן - גרשיים מעוגלות
+      // קריאה לשרת
+      const response = await fetch(`${API_URL}/users/login`, {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 
           email: identifier, 
@@ -32,23 +32,42 @@ const Login = () => {
         })
       });
 
+      // הדפסת סטטוס התשובה לדיבוג
       console.log('Response status:', response.status);
 
-      if (response.status === 200 || response.status === 201) {
-        const data = await response.json();
-        if (data.userId) {
-          navigate(`/tasks/${data.userId}`); // תיקון כאן
-        } else {
-          navigate('/tasks/1'); // שימוש ב-navigate במקום window.location
-        }
-      } else {
-        setError('שם משתמש או סיסמה שגויים');
+      // קריאת התוכן כטקסט
+      const text = await response.text();
+      console.log('Response text:', text);
+
+      let data;
+      try {
+        // ניסיון לפרסר את הטקסט ל-JSON
+        data = text ? JSON.parse(text) : {};
+        console.log('Parsed data:', data);
+      } catch (err) {
+        console.error('Failed to parse response:', err);
+        throw new Error('תשובה לא תקינה מהשרת');
       }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'שם משתמש או סיסמה שגויים');
+      }
+
+      // בדיקת מזהה המשתמש בתשובה
+      const userId = data.userId || data.user?.id || data.id;
+      console.log('User ID from response:', userId);
+
+      if (userId) {
+        navigate(`/users/tasks/${userId}`);
+      } else {
+        throw new Error('חסר מזהה משתמש בתשובה מהשרת');
+      }
+
     } catch (error) {
-      console.error('Network error:', error);
-      setError('שגיאת התחברות, אנא נסה שוב');
+      console.error('Login error:', error);
+      setError(error.message || 'שגיאת התחברות, אנא נסה שוב');
     }
-};
+  };
 
   return (
     <div className="login-container">
@@ -57,7 +76,7 @@ const Login = () => {
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleLogin} className="login-form">
           <div className="form-group">
-            <label>אימייל :</label>
+            <label>אימייל:</label>
             <input
               type="email"
               value={identifier}
