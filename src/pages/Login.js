@@ -20,7 +20,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/users/login`, { // תיקון כאן - גרשיים מעוגלות
+      const response = await fetch(`${API_URL}/users/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,17 +32,16 @@ const Login = () => {
         })
       });
 
-      console.log('Response status:', response.status);
-
-      if (response.status === 200 || response.status === 201) {
+      if (response.ok) {
         const data = await response.json();
         if (data.userId) {
-          navigate(`/tasks/${data.userId}`); // תיקון כאן
+          navigate(`/users/tasks/${data.userId}`); // תיקון נתיב הניווט
         } else {
-          navigate('/tasks/1'); // שימוש ב-navigate במקום window.location
+          setError('לא התקבל מזהה משתמש מהשרת');
         }
       } else {
-        setError('שם משתמש או סיסמה שגויים');
+        const errorData = await response.json();
+        setError(errorData.error || 'שם משתמש או סיסמה שגויים');
       }
     } catch (error) {
       console.error('Network error:', error);
@@ -57,7 +56,7 @@ const Login = () => {
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleLogin} className="login-form">
           <div className="form-group">
-            <label>אימייל :</label>
+            <label>אימייל:</label>
             <input
               type="email"
               value={identifier}

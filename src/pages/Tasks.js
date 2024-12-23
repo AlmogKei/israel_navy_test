@@ -19,28 +19,25 @@ const Tasks = () => {
     task_value: ''
   });
 
-  // pool tasks from the sql
   useEffect(() => {
     fetchTasks();
   }, [userId]);
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch(`${API_URL}/users/tasks/${userId}`);
-      const data = await response.json();
-
-      if (response.ok) {
-        setTasks(data);
-      } else {
-        setError(data.error || 'Failed to fetch tasks');
+      const response = await fetch(`${API_URL}/users/${userId}/tasks`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const data = await response.json();
+      setTasks(data);
+      setError(null);
     } catch (err) {
       console.error('Error fetching tasks:', err);
-      setError('Network error occurred');
+      setError('שגיאה בטעינת המשימות');
     }
   };
 
-  // start edit task
   const handleEdit = (task) => {
     setEditTaskId(task.id);
     setEditedTask({
@@ -49,7 +46,6 @@ const Tasks = () => {
     });
   };
 
-  // update edit
   const handleEditChange = (field, value) => {
     setEditedTask(prev => ({
       ...prev,
@@ -57,15 +53,14 @@ const Tasks = () => {
     }));
   };
 
-  // save edit
   const handleSaveEdit = async (taskId) => {
     try {
-      const response = await fetch(`${API_URL}/users/tasks/${taskId}`, {
+      const response = await fetch(`${API_URL}/users/${userId}/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           task_name: editedTask.task_name,
-          task_value: Number(editedTask.task_value)  // המרה למספר
+          task_value: Number(editedTask.task_value)
         }),
       });
 
@@ -80,6 +75,7 @@ const Tasks = () => {
       );
       setEditTaskId(null);
       setEditedTask({ task_name: '', task_value: '' });
+      setError(null);
 
     } catch (error) {
       console.error('Error updating task:', error);
@@ -87,20 +83,18 @@ const Tasks = () => {
     }
   };
 
-  // cancel edit
   const handleCancelEdit = () => {
     setEditTaskId(null);
     setEditedTask({ task_name: '', task_value: '' });
   };
 
-  // delete task
   const handleDelete = async (taskId) => {
     if (!window.confirm('האם אתה בטוח שברצונך למחוק משימה זו?')) {
       return;
     }
 
     try {
-      const response = await fetch(`${API_URL}/users/tasks/${taskId}`, {
+      const response = await fetch(`${API_URL}/users/${userId}/tasks/${taskId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -111,7 +105,7 @@ const Tasks = () => {
       }
 
       setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
-      setError(null);  // ניקוי הודעות שגיאה קודמות
+      setError(null);
 
     } catch (error) {
       console.error('Error deleting task:', error);
@@ -119,7 +113,6 @@ const Tasks = () => {
     }
   };
 
-  // adding new task
   const handleAddTask = async () => {
     try {
       if (!newTask.task_name || !newTask.task_value) {
@@ -127,13 +120,13 @@ const Tasks = () => {
         return;
       }
 
-      const response = await fetch(`${API_URL}/users/tasks`, {
+      const response = await fetch(`${API_URL}/users/${userId}/tasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           task_name: newTask.task_name,
-          task_value: Number(newTask.task_value),  // המרה למספר
-          user_id: Number(userId)  // המרה למספר
+          task_value: Number(newTask.task_value),
+          user_id: Number(userId)
         }),
       });
 
@@ -146,6 +139,7 @@ const Tasks = () => {
       setTasks(prevTasks => [...prevTasks, addedTask]);
       setShowAddModal(false);
       setNewTask({ task_name: '', task_value: '' });
+      setError(null);
 
     } catch (error) {
       console.error('Error adding task:', error);
@@ -219,7 +213,6 @@ const Tasks = () => {
         </button>
       </div>
 
-
       {showAddModal && (
         <div className="modal">
           <div className="modal-content">
@@ -244,27 +237,4 @@ const Tasks = () => {
             </div>
             <div className="modal-actions">
               <button
-                className="action-btn save"
-                onClick={handleAddTask}
-              >
-                הוסף
-              </button>
-              <button
-                className="action-btn cancel"
-                onClick={() => {
-                  setShowAddModal(false);
-                  setNewTask({ task_name: '', task_value: '' });
-                  setError(null);
-                }}
-              >
-                ביטול
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Tasks;
+                className="action-btn

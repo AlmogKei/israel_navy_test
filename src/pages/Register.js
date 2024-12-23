@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // הוספת useNavigate
 import '../styles/Register.css';
 
 const API_URL = 'https://israel-navy-test.onrender.com';
@@ -10,6 +10,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
+  const navigate = useNavigate(); // הוספת hook הניווט
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,8 +21,6 @@ const Register = () => {
     }
 
     try {
-      console.log('Sending registration data:', { fullName, email, phone });
-      
       const response = await fetch(`${API_URL}/users/register`, {
         method: 'POST',
         headers: {
@@ -36,11 +35,9 @@ const Register = () => {
         })
       });
 
-      console.log('Response status:', response.status);
-
       if (response.ok) {
         alert('נרשמת בהצלחה!');
-        window.location.replace(`${API_URL}/users/login`);
+        navigate('/users/login'); // שימוש ב-navigate במקום window.location
         return;
       }
 
