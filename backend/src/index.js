@@ -4,6 +4,21 @@ const db = require('./config/database');
 
 const app = express();
 
+// הוספה לפני הגדרת הראוטים
+app.use((req, res, next) => {
+  const originalJson = res.json;
+  res.json = function(data) {
+      console.log('Response being sent:', data);
+      return originalJson.call(this, data);
+  };
+  next();
+});
+
+// הוספת נתיב בדיקה
+app.get('/test', (req, res) => {
+  res.json({ message: 'Server is working' });
+});
+
 // Middleware
 app.use(express.json());
 app.use(cors({
