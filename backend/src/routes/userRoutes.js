@@ -58,46 +58,57 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log('Login attempt:', email); // דיבוג
+    console.log('Login request received:', { email }); // לוג 1
 
+    // בדיקת שדות חובה
     if (!email || !password) {
-      return res.status(400).json({ error: 'All fields are required' });
+      console.log('Missing required fields');
+      return res.status(400).json({ error: 'Email and password are required' });
     }
 
+    // מציאת המשתמש
     const userRepository = AppDataSource.getRepository(User);
+    console.log('Looking for user with email:', email); // לוג 2
 
-    // מצא את המשתמש
     const user = await userRepository.findOne({
-      where: { email },
-      select: ['id', 'email', 'fullName', 'password_hash'] // מציין אילו שדות לבחור
+      where: { email }
     });
 
+    console.log('Database query result:', user ? 'User found' : 'User not found'); // לוג 3
+
     if (!user) {
-      console.log('User not found:', email); // דיבוג
+      console.log('No user found with email:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // בדוק סיסמה
+    // השוואת סיסמאות
+    console.log('Comparing passwords'); // לוג 4
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    console.log('Password comparison result:', isValidPassword); // לוג 5
 
     if (!isValidPassword) {
-      console.log('Invalid password for:', email); // דיבוג
+      console.log('Invalid password for user:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // הדפס את התשובה לפני השליחה
+    // הכנת תשובה
     const responseData = {
       id: user.id,
       email: user.email,
       fullName: user.fullName
     };
-    console.log('Sending response:', responseData); // דיבוג
 
+    console.log('Sending successful response:', responseData); // לוג 6
+
+    // שליחת התשובה
     return res.status(200).json(responseData);
 
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({
+      error: 'Server error',
+      details: error.message
+    });
   }
 });
 

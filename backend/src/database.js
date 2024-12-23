@@ -10,7 +10,16 @@ const AppDataSource = new DataSource({
     },
     synchronize: true,
     logging: true,
-    entities: [User, Task],
+    entities: [User, Task]
 });
+
+// הוסף לוגים לחיבור לדאטהבייס
+AppDataSource.initialize()
+    .then(() => {
+        console.log('Data Source has been initialized!');
+    })
+    .catch((err) => {
+        console.error('Error during Data Source initialization:', err);
+    });
 
 module.exports = AppDataSource;
