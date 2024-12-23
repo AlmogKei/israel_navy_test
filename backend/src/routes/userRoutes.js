@@ -58,31 +58,46 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('Login attempt:', email); // דיבוג
 
-    // Validation
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email or password are required' });
+      return res.status(400).json({ error: 'All fields are required' });
     }
 
-    // Check if the user exists
     const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOneBy({ email });
+
+    // מצא את המשתמש
+    const user = await userRepository.findOne({
+      where: { email },
+      select: ['id', 'email', 'fullName', 'password_hash'] // מציין אילו שדות לבחור
+    });
 
     if (!user) {
-      return res.status(400).json({ error: 'Invalid email' });
+      console.log('User not found:', email); // דיבוג
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Compare passwords
-    const isMatch = await bcrypt.compare(password, user.password_hash);
+    // בדוק סיסמה
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
-    if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid password' });
+    if (!isValidPassword) {
+      console.log('Invalid password for:', email); // דיבוג
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    res.status(200).json({ message: 'Login successful', userId: user.id });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    // הדפס את התשובה לפני השליחה
+    const responseData = {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName
+    };
+    console.log('Sending response:', responseData); // דיבוג
+
+    return res.status(200).json(responseData);
+
+  } catch (error) {
+    console.error('Login error:', error);
+    return res.status(500).json({ error: 'Server error' });
   }
 });
 
