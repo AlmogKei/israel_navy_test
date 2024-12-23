@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const AppDataSource = require('../database');
 const User = require('../entities/User');
 const taskRepository = require('../repositories/taskRepository');
+const pool = require('../config/database');
 
 const router = express.Router();
 
@@ -56,75 +57,48 @@ router.post('/register', async (req, res) => {
 
 // Login user
 router.post('/login', async (req, res) => {
-  console.log('Login request received with body:', req.body);
+  console.log('Login request received:', req.body);
 
   try {
     const { email, password } = req.body;
 
-    // בדיקת קלט
     if (!email || !password) {
-      console.log('Missing credentials');
       return res.status(400).json({
         success: false,
         error: 'נדרש אימייל וסיסמה'
       });
     }
 
-    // בדיקת חיבור לדאטהבייס
-    const client = await db.connect();
-    console.log('Connected to database');
+    // שימוש ב-pool במקום db
+    const result = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
 
-    try {
-      // חיפוש המשתמש
-      const query = 'SELECT * FROM users WHERE email = $1';
-      console.log('Executing query:', query, 'with email:', email);
+    const user = result.rows[0];
 
-      const result = await client.query(query, [email]);
-      console.log('Query result rows:', result.rows.length);
-
-      const user = result.rows[0];
-
-      if (!user) {
-        console.log('No user found with email:', email);
-        return res.status(401).json({
-          success: false,
-          error: 'פרטי התחברות שגויים'
-        });
-      }
-
-      console.log('User found:', { id: user.id, email: user.email });
-
-      // בדיקת סיסמה
-      const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-      console.log('Password validation result:', isPasswordValid);
-
-      if (!isPasswordValid) {
-        console.log('Invalid password for user:', email);
-        return res.json({
-          success: true,
-          message: 'Test response',
-          receivedEmail: email
-        });
-      }
-
-      // הכנת התשובה
-      const responseData = {
-        success: true,
-        id: user.id,
-        email: user.email,
-        fullName: user.fullname
-      };
-
-      console.log('Sending response:', responseData);
-
-      // שליחת התשובה
-      return res.status(200).json(responseData);
-
-    } finally {
-      // שחרור החיבור לדאטהבייס
-      client.release();
-      console.log('Database connection released');
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: 'משתמש לא קיים'
+      });
     }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        error: 'סיסמה שגויה'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      id: user.id,
+      email: user.email,
+      fullName: user.fullname
+    });
 
   } catch (error) {
     console.error('Login error:', error);
@@ -134,11 +108,6 @@ router.post('/login', async (req, res) => {
       details: error.message
     });
   }
-});
-
-// הוספת נתיב בדיקה
-router.get('/test', (req, res) => {
-  res.json({ message: 'Test route working' });
 });
 
 // Get all users

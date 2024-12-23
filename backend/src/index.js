@@ -1,36 +1,25 @@
-// index.js
 const express = require('express');
 const cors = require('cors');
-const db = require('./config/database');
+const pool = require('./config/database');  // שינוי משם המשתנה
 
 const app = express();
 
-// CORS configuration
 app.use(cors());
-
-// Body parsing middleware
 app.use(express.json());
 
-// Logging middleware
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`, {
-    body: req.body,
-    headers: req.headers
+// בדיקת חיבור לדאטהבייס
+pool.connect()
+  .then(client => {
+    console.log('Database connection successful');
+    client.release();
+  })
+  .catch(err => {
+    console.error('Database connection error:', err);
   });
-
-  // Override the res.json method to log responses
-  const originalJson = res.json;
-  res.json = function (body) {
-    console.log('Response body:', body);
-    return originalJson.call(this, body);
-  };
-
-  next();
-});
 
 // Test route
 app.get('/test', (req, res) => {
-  return res.json({ message: 'Hello from server!' });
+  res.json({ message: 'Server working' });
 });
 
 app.use('/users', require('./routes/userRoutes'));
