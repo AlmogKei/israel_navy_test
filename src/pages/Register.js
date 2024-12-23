@@ -17,40 +17,32 @@ const Register = () => {
     e.preventDefault();
     setError('');
 
-    if (password !== confirmPass) {
-      setError('הסיסמאות אינן תואמות');
-      return;
-    }
-
     try {
-      console.log('Sending registration data:', { fullName, email, phone }); // לוג של הנתונים הנשלחים
-      
+      if (password !== confirmPass) {
+        setError('הסיסמאות אינן תואמות');
+        return;
+      }
+
+      console.log('Attempting to register with:', { email, fullName, phone });
+
       const response = await fetch(`${API_URL}/users/register`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          fullName,
           email,
+          fullName,
           phone,
           password
         })
       });
 
-      const data = await response.text();
-      console.log('Server response:', data); // לוג של התשובה מהשרת
-      
-      let parsedData;
-      try {
-        parsedData = data ? JSON.parse(data) : {};
-      } catch (err) {
-        console.error('Error parsing response:', err);
-        throw new Error('תשובה לא תקינה מהשרת');
-      }
+      const text = await response.text();
+      console.log('Server response:', text);
 
       if (!response.ok) {
-        throw new Error(parsedData.error || 'שגיאה בהרשמה');
+        throw new Error(text || 'שגיאה בהרשמה');
       }
 
       alert('נרשמת בהצלחה!');
@@ -58,7 +50,7 @@ const Register = () => {
 
     } catch (err) {
       console.error('Registration error:', err);
-      setError(err.message || 'שגיאת רשת');
+      setError(err.message || 'שגיאה בהרשמה');
     }
   };
 

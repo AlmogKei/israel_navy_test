@@ -1,3 +1,65 @@
+// Register.js
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import '../styles/Register.css';
+
+const API_URL = 'https://israel-navy-test.onrender.com';
+
+const Register = () => {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPass, setConfirmPass] = useState('');
+  const [phone, setPhone] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      if (password !== confirmPass) {
+        setError('הסיסמאות אינן תואמות');
+        return;
+      }
+
+      console.log('Attempting to register with:', { email, fullName, phone });
+
+      const response = await fetch(`${API_URL}/users/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          fullName,
+          phone,
+          password
+        })
+      });
+
+      const text = await response.text();
+      console.log('Server response:', text);
+
+      if (!response.ok) {
+        throw new Error(text || 'שגיאה בהרשמה');
+      }
+
+      alert('נרשמת בהצלחה!');
+      navigate('/users/login');
+
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError(err.message || 'שגיאה בהרשמה');
+    }
+  };
+
+  // ... שאר הקוד של ה-render נשאר זהה
+
+};
+
+// Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
@@ -5,7 +67,7 @@ import '../styles/login.css';
 const API_URL = 'https://israel-navy-test.onrender.com';
 
 const Login = () => {
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -14,49 +76,45 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
-    if (!identifier || !password) {
-      setError('יש להזין אימייל וסיסמה');
-      return;
-    }
-
     try {
+      console.log('Attempting login with:', { email });
+
       const response = await fetch(`${API_URL}/users/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: identifier,
+          email,
           password
         })
       });
 
-      // ראשית נבדוק אם יש תוכן בתשובה
       const text = await response.text();
+      console.log('Server response:', text);
+
+      if (!response.ok) {
+        throw new Error('שם משתמש או סיסמה שגויים');
+      }
+
       let data;
-      
       try {
-        // ננסה לפרסר את התוכן כ-JSON רק אם יש תוכן
-        data = text ? JSON.parse(text) : {};
+        data = JSON.parse(text);
       } catch (err) {
         console.error('Failed to parse response:', text);
         throw new Error('תשובה לא תקינה מהשרת');
       }
 
-      if (!response.ok) {
-        throw new Error(data.error || 'שם משתמש או סיסמה שגויים');
-      }
+      console.log('Parsed login response:', data);
 
-      if (!data.userId) {
+      if (data.id) {
+        navigate(`/users/tasks/${data.id}`);
+      } else {
         throw new Error('חסר מזהה משתמש בתשובה מהשרת');
       }
 
-      // אם הגענו לכאן, יש לנו userId תקין
-      navigate(`/users/tasks/${data.userId}`);
-
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Login error:', error);
       setError(error.message || 'שגיאת התחברות, אנא נסה שוב');
     }
   };
@@ -71,8 +129,8 @@ const Login = () => {
             <label>אימייל:</label>
             <input
               type="email"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="הזן אימייל"
               required
             />
