@@ -1,45 +1,36 @@
+// index.js
 const express = require('express');
 const cors = require('cors');
 const db = require('./config/database');
 
 const app = express();
 
-// הוספה לפני הגדרת הראוטים
+// CORS configuration
+app.use(cors());
+
+// Body parsing middleware
+app.use(express.json());
+
+// Logging middleware
 app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`, {
+    body: req.body,
+    headers: req.headers
+  });
+
+  // Override the res.json method to log responses
   const originalJson = res.json;
-  res.json = function(data) {
-      console.log('Response being sent:', data);
-      return originalJson.call(this, data);
+  res.json = function (body) {
+    console.log('Response body:', body);
+    return originalJson.call(this, body);
   };
+
   next();
 });
 
-// הוספת נתיב בדיקה
+// Test route
 app.get('/test', (req, res) => {
-  res.json({ message: 'Server is working' });
-});
-
-// Middleware
-app.use(express.json());
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// בדיקת חיבור לדאטהבייס
-db.connect()
-  .then(client => {
-    console.log('Database connected successfully');
-    client.release();
-  })
-  .catch(err => {
-    console.error('Database connection error:', err);
-  });
-
-// Routes
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  return res.json({ message: 'Hello from server!' });
 });
 
 app.use('/users', require('./routes/userRoutes'));

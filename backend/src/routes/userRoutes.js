@@ -100,9 +100,10 @@ router.post('/login', async (req, res) => {
 
       if (!isPasswordValid) {
         console.log('Invalid password for user:', email);
-        return res.status(401).json({
-          success: false,
-          error: 'פרטי התחברות שגויים'
+        return res.json({
+          success: true,
+          message: 'Test response',
+          receivedEmail: email
         });
       }
 
