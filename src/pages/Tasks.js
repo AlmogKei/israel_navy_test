@@ -27,14 +27,14 @@ const Tasks = () => {
     try {
       const response = await fetch(`${API_URL}/users/${userId}/tasks`);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error('Failed to fetch tasks');
       }
       const data = await response.json();
       setTasks(data);
       setError(null);
     } catch (err) {
       console.error('Error fetching tasks:', err);
-      setError('שגיאה בטעינת המשימות');
+      setError(err.message || 'שגיאת רשת');
     }
   };
 
@@ -60,7 +60,8 @@ const Tasks = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           task_name: editedTask.task_name,
-          task_value: Number(editedTask.task_value)
+          task_value: Number(editedTask.task_value),
+          user_id: Number(userId)
         }),
       });
 
@@ -79,7 +80,7 @@ const Tasks = () => {
 
     } catch (error) {
       console.error('Error updating task:', error);
-      setError(error.message);
+      setError(error.message || 'שגיאה בעדכון המשימה');
     }
   };
 
@@ -109,7 +110,7 @@ const Tasks = () => {
 
     } catch (error) {
       console.error('Error deleting task:', error);
-      setError(error.message);
+      setError(error.message || 'שגיאה במחיקת המשימה');
     }
   };
 
@@ -143,7 +144,7 @@ const Tasks = () => {
 
     } catch (error) {
       console.error('Error adding task:', error);
-      setError(error.message);
+      setError(error.message || 'שגיאה בהוספת המשימה');
     }
   };
 
@@ -237,4 +238,27 @@ const Tasks = () => {
             </div>
             <div className="modal-actions">
               <button
-                className="action-btn
+                className="action-btn save"
+                onClick={handleAddTask}
+              >
+                הוסף
+              </button>
+              <button
+                className="action-btn cancel"
+                onClick={() => {
+                  setShowAddModal(false);
+                  setNewTask({ task_name: '', task_value: '' });
+                  setError(null);
+                }}
+              >
+                ביטול
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Tasks;
