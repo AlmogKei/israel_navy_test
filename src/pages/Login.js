@@ -14,54 +14,48 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
-    if (!identifier || !password) {
-      setError('יש להזין אימייל וסיסמה');
-      return;
-    }
-
     try {
-      // קריאה לשרת
+      if (!identifier || !password) {
+        setError('יש להזין אימייל וסיסמה');
+        return;
+      }
+
+      console.log('Sending login request for:', identifier); // דיבוג
+
       const response = await fetch(`${API_URL}/users/login`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ 
-          email: identifier, 
-          password 
+        body: JSON.stringify({
+          email: identifier,
+          password
         })
       });
 
-      // הדפסת סטטוס התשובה לדיבוג
-      console.log('Response status:', response.status);
-
-      // קריאת התוכן כטקסט
       const text = await response.text();
-      console.log('Response text:', text);
+      console.log('Raw response:', text); // דיבוג
 
       let data;
       try {
-        // ניסיון לפרסר את הטקסט ל-JSON
         data = text ? JSON.parse(text) : {};
-        console.log('Parsed data:', data);
+        console.log('Parsed response:', data); // דיבוג
       } catch (err) {
-        console.error('Failed to parse response:', err);
+        console.error('Parse error:', err);
         throw new Error('תשובה לא תקינה מהשרת');
       }
 
       if (!response.ok) {
-        throw new Error(data.error || 'שם משתמש או סיסמה שגויים');
+        throw new Error(data.error || 'שגיאת התחברות');
       }
 
-      // בדיקת מזהה המשתמש בתשובה
-      const userId = data.userId || data.user?.id || data.id;
-      console.log('User ID from response:', userId);
-
-      if (userId) {
-        navigate(`/users/tasks/${userId}`);
-      } else {
+      if (!data.id) {
+        console.error('Missing ID in response:', data); // דיבוג
         throw new Error('חסר מזהה משתמש בתשובה מהשרת');
       }
+
+      // נווט לדף המשימות
+      navigate(`/users/tasks/${data.id}`);
 
     } catch (error) {
       console.error('Login error:', error);
