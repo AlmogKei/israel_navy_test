@@ -32,20 +32,32 @@ const Login = () => {
         })
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.userId) {
-          navigate(`/users/tasks/${data.userId}`); // תיקון נתיב הניווט
-        } else {
-          setError('לא התקבל מזהה משתמש מהשרת');
-        }
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'שם משתמש או סיסמה שגויים');
+      // ראשית נבדוק אם יש תוכן בתשובה
+      const text = await response.text();
+      let data;
+      
+      try {
+        // ננסה לפרסר את התוכן כ-JSON רק אם יש תוכן
+        data = text ? JSON.parse(text) : {};
+      } catch (err) {
+        console.error('Failed to parse response:', text);
+        throw new Error('תשובה לא תקינה מהשרת');
       }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'שם משתמש או סיסמה שגויים');
+      }
+
+      if (!data.userId) {
+        throw new Error('חסר מזהה משתמש בתשובה מהשרת');
+      }
+
+      // אם הגענו לכאן, יש לנו userId תקין
+      navigate(`/users/tasks/${data.userId}`);
+
     } catch (error) {
-      console.error('Network error:', error);
-      setError('שגיאת התחברות, אנא נסה שוב');
+      console.error('Error:', error);
+      setError(error.message || 'שגיאת התחברות, אנא נסה שוב');
     }
   };
 
