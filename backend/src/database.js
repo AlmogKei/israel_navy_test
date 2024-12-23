@@ -13,13 +13,4 @@ const AppDataSource = new DataSource({
     entities: [User, Task]
 });
 
-// בדיקת חיבור לדאטהבייס
-AppDataSource.initialize()
-    .then(() => {
-        console.log("Data Source has been initialized!");
-    })
-    .catch(err => {
-        console.error("Error during Data Source initialization:", err);
-    });
-
 module.exports = AppDataSource;

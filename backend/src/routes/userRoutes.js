@@ -56,55 +56,60 @@ router.post('/register', async (req, res) => {
 
 // Login user
 router.post('/login', async (req, res) => {
-  console.log('Login request received:', req.body);
-
   try {
     const { email, password } = req.body;
+    console.log('Login attempt for:', email);
 
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Email and password are required'
+        error: 'נדרש אימייל וסיסמה'
       });
     }
 
-    const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOne({ where: { email } });
+    // חיפוש המשתמש
+    const result = await db.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
 
+    const user = result.rows[0];
     console.log('User found:', user ? 'yes' : 'no');
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid credentials'
+        error: 'פרטי התחברות שגויים'
       });
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
-    console.log('Password valid:', isValidPassword);
+    // בדיקת סיסמה
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    console.log('Password valid:', isPasswordValid);
 
-    if (!isValidPassword) {
+    if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid credentials'
+        error: 'פרטי התחברות שגויים'
       });
     }
 
+    // שליחת תשובה
     const responseData = {
       success: true,
       id: user.id,
       email: user.email,
-      fullName: user.fullName
+      fullName: user.fullname
     };
 
     console.log('Sending response:', responseData);
-    res.json(responseData);  // שימוש ב-res.json במקום res.send
+    res.status(200).json(responseData);
 
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      error: 'Server error',
+      error: 'שגיאת שרת',
       details: error.message
     });
   }

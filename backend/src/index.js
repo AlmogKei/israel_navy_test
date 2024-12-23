@@ -1,46 +1,35 @@
 const express = require('express');
 const cors = require('cors');
-const AppDataSource = require('./database');
+const db = require('./config/database');
 
 const app = express();
 
-// Middleware בסיסי
+// Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-// Middleware לבדיקת בקשות
-app.use((req, res, next) => {
-  console.log('Request received:', {
-    method: req.method,
-    path: req.url,
-    body: req.body,
-    headers: req.headers
-  });
-  next();
-});
-
-// Middleware לטיפול בשגיאות
-app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(500).json({ error: 'Internal server error', details: err.message });
-});
-
-// הפעלת השרת רק אחרי התחברות לדאטהבייס
-const startServer = async () => {
-  try {
-    await AppDataSource.initialize();
+// בדיקת חיבור לדאטהבייס
+db.connect()
+  .then(client => {
     console.log('Database connected successfully');
+    client.release();
+  })
+  .catch(err => {
+    console.error('Database connection error:', err);
+  });
 
-    app.use('/users', require('./routes/userRoutes'));
+// Routes
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error('Server initialization error:', error);
-    process.exit(1);
-  }
-};
+app.use('/users', require('./routes/userRoutes'));
 
-startServer();
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
