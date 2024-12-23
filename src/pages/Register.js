@@ -11,7 +11,6 @@ const Register = () => {
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
 
-  // send the details to the docker server
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -21,15 +20,16 @@ const Register = () => {
     }
 
     try {
-      console.log('Sending data:', { full_name: fullName, email, phone, password });
-
-      const response = await fetch(`${API_URL}/users/register`, {  // תיקון כאן - גרשיים מעוגלות במקום רגילות
+      console.log('Sending registration data:', { fullName, email, phone });
+      
+      const response = await fetch(`${API_URL}/users/register`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
-          full_name: fullName,
+          fullName,
           email,
           phone,
           password
@@ -38,13 +38,15 @@ const Register = () => {
 
       console.log('Response status:', response.status);
 
-      if (response.status === 200 || response.status === 201) {
+      if (response.ok) {
         alert('נרשמת בהצלחה!');
-        window.location.href = `${API_URL}/users/login`;  // תיקון כאן - גרשיים מעוגלות
+        window.location.replace(API_URL); // שינוי כאן
         return;
-      } else {
-        alert('שגיאה בהרשמה');
       }
+
+      const errorData = await response.json();
+      alert(errorData.error || 'שגיאה בהרשמה');
+
     } catch (err) {
       console.error('Error:', err);
       alert('שגיאת רשת');
@@ -92,7 +94,6 @@ const Register = () => {
             />
           </div>
 
-
           <div className="form-group">
             <label htmlFor="password">סיסמה:</label>
             <input
@@ -120,7 +121,7 @@ const Register = () => {
           <button type="submit" className="btn register-btn">הרשמה</button>
         </form>
         <p className="login-link">
-          כבר רשום/ה? <Link to="/users/login">התחבר/י כאן</Link>
+          כבר רשום/ה? <Link to="/">התחבר/י כאן</Link>
         </p>
       </div>
     </div>
