@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // הוספת useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Register.css';
 
 const API_URL = 'https://israel-navy-test.onrender.com';
@@ -10,22 +10,25 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
-  const navigate = useNavigate(); // הוספת hook הניווט
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
     if (password !== confirmPass) {
-      alert('הסיסמאות אינן תואמות');
+      setError('הסיסמאות אינן תואמות');
       return;
     }
 
     try {
+      console.log('Sending registration data:', { fullName, email, phone }); // לוג של הנתונים הנשלחים
+      
       const response = await fetch(`${API_URL}/users/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
         },
         body: JSON.stringify({
           fullName,
@@ -35,18 +38,27 @@ const Register = () => {
         })
       });
 
-      if (response.ok) {
-        alert('נרשמת בהצלחה!');
-        navigate('/users/login'); // שימוש ב-navigate במקום window.location
-        return;
+      const data = await response.text();
+      console.log('Server response:', data); // לוג של התשובה מהשרת
+      
+      let parsedData;
+      try {
+        parsedData = data ? JSON.parse(data) : {};
+      } catch (err) {
+        console.error('Error parsing response:', err);
+        throw new Error('תשובה לא תקינה מהשרת');
       }
 
-      const errorData = await response.json();
-      alert(errorData.error || 'שגיאה בהרשמה');
+      if (!response.ok) {
+        throw new Error(parsedData.error || 'שגיאה בהרשמה');
+      }
+
+      alert('נרשמת בהצלחה!');
+      navigate('/users/login');
 
     } catch (err) {
-      console.error('Error:', err);
-      alert('שגיאת רשת');
+      console.error('Registration error:', err);
+      setError(err.message || 'שגיאת רשת');
     }
   };
 
@@ -54,6 +66,7 @@ const Register = () => {
     <div className="register-container">
       <div className="register-card">
         <h2 className="register-title">הרשמה</h2>
+        {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit} className="register-form">
           <div className="form-group">
             <label htmlFor="fullName">שם מלא:</label>
