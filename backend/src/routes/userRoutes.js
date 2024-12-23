@@ -11,62 +11,84 @@ router.post('/register', async (req, res) => {
   try {
     const { fullName, email, phone, password } = req.body;
 
+    console.log('Request received:', { fullName, email, phone, password });
+
+    // Validation
     if (!fullName || !email || !phone || !password) {
+      console.log('Validation failed');
       return res.status(400).json({ error: 'All fields are required' });
     }
 
+    console.log('Validation passed');
+
     const userRepository = AppDataSource.getRepository(User);
 
+    // Check if email already exists
     const existingUser = await userRepository.findOne({ where: { email } });
     if (existingUser) {
+      console.log('Email already registered:', email);
       return res.status(400).json({ error: 'Email already registered' });
     }
 
+    console.log('Email is unique, proceeding to hash password');
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    console.log('Password hashed, creating new user');
+
+    // Create new user
     const newUser = userRepository.create({
       fullName,
       email,
       phone,
-      password_hash: hashedPassword
+      password_hash: hashedPassword,
     });
 
-    const savedUser = await userRepository.save(newUser);
-    res.status(201).json({
-      message: 'User registered successfully',
-      userId: savedUser.id
-    });
+    await userRepository.save(newUser);
+
+    console.log('User registered successfully:', newUser);
+
+    res.status(201).json({ message: 'User registered successfully', userId: newUser.id });
   } catch (err) {
-    console.error('Registration error:', err);
+    console.error('Error during registration:', err.message);
+    console.error('Full error stack:', err.stack);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // Login user
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validation
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email or password are required' });
+    }
+
+    // Check if the user exists
     const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOne({ where: { email } });
+    const user = await userRepository.findOneBy({ email });
 
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(400).json({ error: 'Invalid email' });
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password_hash);
 
-    if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid password' });
     }
 
-    res.status(200).json({ userId: user.id });
+    res.status(200).json({ message: 'Login successful', userId: user.id });
   } catch (err) {
-    console.error('Login error:', err);
+    console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
 
 // Get all users
 router.get('/', async (req, res) => {
