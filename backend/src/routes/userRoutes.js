@@ -7,31 +7,23 @@ const taskRepository = require('../repositories/taskRepository');
 const router = express.Router();
 
 // Register a new user
-// userRoutes.js
 router.post('/register', async (req, res) => {
   try {
     const { fullName, email, phone, password } = req.body;
 
-    // לוגים לבדיקה
-    console.log('Received registration data:', { fullName, email, phone });
-
-    // בדיקות תקינות
     if (!fullName || !email || !phone || !password) {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
     const userRepository = AppDataSource.getRepository(User);
 
-    // בדיקת משתמש קיים
     const existingUser = await userRepository.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    // הצפנת סיסמה
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // יצירת משתמש חדש
     const newUser = userRepository.create({
       fullName,
       email,
@@ -39,10 +31,7 @@ router.post('/register', async (req, res) => {
       password_hash: hashedPassword
     });
 
-    // שמירה במסד הנתונים
     const savedUser = await userRepository.save(newUser);
-    console.log('User saved:', savedUser);
-
     res.status(201).json({
       message: 'User registered successfully',
       userId: savedUser.id
@@ -53,12 +42,10 @@ router.post('/register', async (req, res) => {
   }
 });
 
-
 // Login user
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log('Login attempt:', { email }); // הוסף לוג
 
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOne({ where: { email } });
@@ -73,14 +60,13 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    console.log('Login successful for user:', user.id); // הוסף לוג
     res.status(200).json({ userId: user.id });
-
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // Get all users
 router.get('/', async (req, res) => {
