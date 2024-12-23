@@ -14,13 +14,13 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
-    try {
-      if (!identifier || !password) {
-        setError('יש להזין אימייל וסיסמה');
-        return;
-      }
+    if (!identifier || !password) {
+      setError('יש להזין אימייל וסיסמה');
+      return;
+    }
 
-      console.log('Sending login request:', { email: identifier }); // לא להדפיס את הסיסמה
+    try {
+      console.log('Attempting login for:', identifier);
 
       const response = await fetch(`${API_URL}/users/login`, {
         method: 'POST',
@@ -33,37 +33,24 @@ const Login = () => {
         })
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
       const text = await response.text();
-      console.log('Raw response text:', text);
+      console.log('Raw response:', text);
 
-      // אם אין תוכן בתשובה
       if (!text) {
-        console.error('Empty response from server');
         throw new Error('לא התקבלה תשובה מהשרת');
       }
 
-      let data;
-      try {
-        data = JSON.parse(text);
-        console.log('Parsed response data:', data);
-      } catch (err) {
-        console.error('JSON parse error:', err);
-        throw new Error('תשובה לא תקינה מהשרת');
-      }
+      const data = JSON.parse(text);
+      console.log('Parsed response:', data);
 
-      if (!response.ok) {
-        throw new Error(data.error || 'שגיאת התחברות');
+      if (data.error) {
+        throw new Error(data.error);
       }
 
       if (!data.id) {
-        console.error('Response missing user ID:', data);
         throw new Error('חסר מזהה משתמש בתשובה מהשרת');
       }
 
-      // שמירת פרטי המשתמש ומעבר לדף המשימות
       console.log('Login successful, navigating to tasks');
       navigate(`/users/tasks/${data.id}`);
 
