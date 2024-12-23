@@ -1,30 +1,53 @@
 const { Pool } = require('pg');
 
+// הגדרות החיבור
 const pool = new Pool({
-  connectionString: 'postgresql://development_mbkc_user:VID2LjAmMPnNNtfbTPCkMVxycGAkLXVu@dpg-ctjktstumphs73fbs4g0-a.oregon-postgres.render.com/development_mbkc',
+  user: 'development_mbkc_user',
+  password: 'VID2LjAmMPnNNtfbTPCkMVxycGAkLXVu',
+  host: 'dpg-ctjktstumphs73fbs4g0-a.oregon-postgres.render.com',
+  database: 'development_mbkc',
+  port: 5432,
   ssl: {
     rejectUnauthorized: false
   }
 });
 
-// נוסיף פונקציית בדיקה שרצה מיד
-const checkConnection = async () => {
+// פונקציית בדיקת חיבור
+const testConnection = async () => {
+  let client;
   try {
-    // בדיקת חיבור בסיסית
-    const client = await pool.connect();
-    console.log('Successfully connected to PostgreSQL');
+    // בדיקת חיבור
+    client = await pool.connect();
+    console.log('Successfully connected to database');
 
-    // בדיקת הטבלה
-    const userCheck = await client.query('SELECT id, email FROM users LIMIT 5');
-    console.log('Users in database:', userCheck.rows);
+    // בדיקת טבלת משתמשים
+    const { rows } = await client.query(`
+            SELECT id, email, fullname 
+            FROM users 
+            ORDER BY id DESC 
+            LIMIT 5
+        `);
 
-    client.release();
-  } catch (err) {
-    console.error('Database connection error:', err);
+    console.log('Found users:', rows);
+    return true;
+
+  } catch (error) {
+    console.error('Database connection error:', error);
+    return false;
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 };
 
-// הרצת הבדיקה
-checkConnection();
+// בדיקת חיבור בהתחלה
+testConnection()
+  .then(success => {
+    if (!success) {
+      console.error('Failed to connect to database');
+      process.exit(1);
+    }
+  });
 
 module.exports = pool;

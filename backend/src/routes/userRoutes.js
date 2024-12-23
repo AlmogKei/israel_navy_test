@@ -54,44 +54,46 @@ router.post('/register', async (req, res) => {
   }
 });
 
+router.get('/test', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT id, email FROM users');
+    console.log('Test query result:', rows);
+    res.json({
+      success: true,
+      users: rows
+    });
+  } catch (error) {
+    console.error('Test route error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 
 // Login user
 router.post('/login', async (req, res) => {
-  console.log('Login attempt with:', {
-    email: req.body.email,
-    timestamp: new Date().toISOString()
-  });
+  console.log('Login attempt with:', req.body);
 
   try {
     const { email, password } = req.body;
 
-    // שאילתה לבדיקת המשתמש
-    const userQuery = {
-      text: 'SELECT * FROM users WHERE email = $1',
-      values: [email]
-    };
+    // בדיקת משתמש
+    const { rows } = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
 
-    console.log('Executing query:', {
-      query: userQuery.text,
-      email: email
-    });
+    console.log('Found user:', rows[0] ? 'Yes' : 'No');
 
-    const result = await pool.query(userQuery);
-
-    console.log('Query result:', {
-      rowCount: result.rowCount,
-      hasUser: result.rows.length > 0,
-      userEmail: result.rows[0]?.email
-    });
-
-    if (result.rows.length === 0) {
+    if (rows.length === 0) {
       return res.status(401).json({
         success: false,
         error: 'משתמש לא קיים'
       });
     }
 
-    const user = result.rows[0];
+    const user = rows[0];
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
     if (!isValidPassword) {
@@ -101,7 +103,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    return res.status(200).json({
+    return res.json({
       success: true,
       id: user.id,
       email: user.email,
@@ -132,6 +134,45 @@ router.get('/check-users', async (req, res) => {
       success: false,
       error: error.message
     });
+  }
+});
+
+// נתיב בדיקה חדש
+router.get('/debug', async (req, res) => {
+  let client;
+  try {
+    client = await pool.connect();
+
+    // בדיקת מבנה הטבלה
+    const tableStructure = await client.query(`
+          SELECT column_name, data_type 
+          FROM information_schema.columns 
+          WHERE table_name = 'users'
+          ORDER BY ordinal_position
+      `);
+
+    // בדיקת משתמשים
+    const users = await client.query(`
+          SELECT id, email, fullname, created_at 
+          FROM users 
+          ORDER BY id DESC
+      `);
+
+    res.json({
+      success: true,
+      tableStructure: tableStructure.rows,
+      userCount: users.rowCount,
+      users: users.rows
+    });
+
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  } finally {
+    if (client) client.release();
   }
 });
 
