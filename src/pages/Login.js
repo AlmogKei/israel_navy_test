@@ -20,7 +20,7 @@ const Login = () => {
         return;
       }
 
-      console.log('Sending login request for:', identifier); // דיבוג
+      console.log('Sending login request:', { email: identifier }); // לא להדפיס את הסיסמה
 
       const response = await fetch(`${API_URL}/users/login`, {
         method: 'POST',
@@ -33,15 +33,24 @@ const Login = () => {
         })
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
       const text = await response.text();
-      console.log('Raw response:', text); // דיבוג
+      console.log('Raw response text:', text);
+
+      // אם אין תוכן בתשובה
+      if (!text) {
+        console.error('Empty response from server');
+        throw new Error('לא התקבלה תשובה מהשרת');
+      }
 
       let data;
       try {
-        data = text ? JSON.parse(text) : {};
-        console.log('Parsed response:', data); // דיבוג
+        data = JSON.parse(text);
+        console.log('Parsed response data:', data);
       } catch (err) {
-        console.error('Parse error:', err);
+        console.error('JSON parse error:', err);
         throw new Error('תשובה לא תקינה מהשרת');
       }
 
@@ -50,11 +59,12 @@ const Login = () => {
       }
 
       if (!data.id) {
-        console.error('Missing ID in response:', data); // דיבוג
+        console.error('Response missing user ID:', data);
         throw new Error('חסר מזהה משתמש בתשובה מהשרת');
       }
 
-      // נווט לדף המשימות
+      // שמירת פרטי המשתמש ומעבר לדף המשימות
+      console.log('Login successful, navigating to tasks');
       navigate(`/users/tasks/${data.id}`);
 
     } catch (error) {
