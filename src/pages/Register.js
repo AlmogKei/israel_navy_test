@@ -10,47 +10,43 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+
+    if (password !== confirmPass) {
+      alert('הסיסמאות אינן תואמות');
+      return;
+    }
 
     try {
-      if (password !== confirmPass) {
-        setError('הסיסמאות אינן תואמות');
-        return;
-      }
-
-      console.log('Attempting to register with:', { email, fullName, phone });
-
       const response = await fetch(`${API_URL}/users/register`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
-          email,
           fullName,
+          email,
           phone,
           password
         })
       });
 
-      const text = await response.text();
-      console.log('Server response:', text);
-
-      if (!response.ok) {
-        throw new Error(text || 'שגיאה בהרשמה');
+      if (response.ok) {
+        alert('נרשמת בהצלחה!');
+        navigate('/users/login');
+        return;
       }
 
-      alert('נרשמת בהצלחה!');
-      navigate('/users/login');
+      const errorData = await response.json();
+      alert(errorData.error || 'שגיאה בהרשמה');
 
     } catch (err) {
-      console.error('Registration error:', err);
-      setError(err.message || 'שגיאה בהרשמה');
+      console.error('Error:', err);
+      alert('שגיאת רשת');
     }
   };
 
@@ -58,7 +54,6 @@ const Register = () => {
     <div className="register-container">
       <div className="register-card">
         <h2 className="register-title">הרשמה</h2>
-        {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit} className="register-form">
           <div className="form-group">
             <label htmlFor="fullName">שם מלא:</label>

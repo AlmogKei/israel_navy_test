@@ -1,65 +1,3 @@
-// Register.js
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import '../styles/Register.css';
-
-const API_URL = 'https://israel-navy-test.onrender.com';
-
-const Register = () => {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPass, setConfirmPass] = useState('');
-  const [phone, setPhone] = useState('');
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    try {
-      if (password !== confirmPass) {
-        setError('הסיסמאות אינן תואמות');
-        return;
-      }
-
-      console.log('Attempting to register with:', { email, fullName, phone });
-
-      const response = await fetch(`${API_URL}/users/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email,
-          fullName,
-          phone,
-          password
-        })
-      });
-
-      const text = await response.text();
-      console.log('Server response:', text);
-
-      if (!response.ok) {
-        throw new Error(text || 'שגיאה בהרשמה');
-      }
-
-      alert('נרשמת בהצלחה!');
-      navigate('/users/login');
-
-    } catch (err) {
-      console.error('Registration error:', err);
-      setError(err.message || 'שגיאה בהרשמה');
-    }
-  };
-
-  // ... שאר הקוד של ה-render נשאר זהה
-
-};
-
-// Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
@@ -67,7 +5,7 @@ import '../styles/login.css';
 const API_URL = 'https://israel-navy-test.onrender.com';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -76,48 +14,41 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
-    try {
-      console.log('Attempting login with:', { email });
+    if (!identifier || !password) {
+      setError('יש להזין אימייל וסיסמה');
+      return;
+    }
 
-      const response = await fetch(`${API_URL}/users/login`, {
+    try {
+      const response = await fetch(`${API_URL}/users/login`, { // תיקון כאן - גרשיים מעוגלות
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({
-          email,
-          password
+        body: JSON.stringify({ 
+          email: identifier, 
+          password 
         })
       });
 
-      const text = await response.text();
-      console.log('Server response:', text);
+      console.log('Response status:', response.status);
 
-      if (!response.ok) {
-        throw new Error('שם משתמש או סיסמה שגויים');
-      }
-
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (err) {
-        console.error('Failed to parse response:', text);
-        throw new Error('תשובה לא תקינה מהשרת');
-      }
-
-      console.log('Parsed login response:', data);
-
-      if (data.id) {
-        navigate(`/users/tasks/${data.id}`);
+      if (response.status === 200 || response.status === 201) {
+        const data = await response.json();
+        if (data.userId) {
+          navigate(`/tasks/${data.userId}`); // תיקון כאן
+        } else {
+          navigate('/tasks/1'); // שימוש ב-navigate במקום window.location
+        }
       } else {
-        throw new Error('חסר מזהה משתמש בתשובה מהשרת');
+        setError('שם משתמש או סיסמה שגויים');
       }
-
     } catch (error) {
-      console.error('Login error:', error);
-      setError(error.message || 'שגיאת התחברות, אנא נסה שוב');
+      console.error('Network error:', error);
+      setError('שגיאת התחברות, אנא נסה שוב');
     }
-  };
+};
 
   return (
     <div className="login-container">
@@ -126,11 +57,11 @@ const Login = () => {
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleLogin} className="login-form">
           <div className="form-group">
-            <label>אימייל:</label>
+            <label>אימייל :</label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               placeholder="הזן אימייל"
               required
             />
