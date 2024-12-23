@@ -1,43 +1,46 @@
-// בקובץ index.js
 const express = require('express');
 const cors = require('cors');
 const AppDataSource = require('./database');
 
 const app = express();
 
-// הוסף את זה לפני הראוטים
+// Middleware בסיסי
+app.use(express.json());
+app.use(cors());
+
+// Middleware לבדיקת בקשות
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`, {
+  console.log('Request received:', {
+    method: req.method,
+    path: req.url,
     body: req.body,
     headers: req.headers
   });
   next();
 });
 
-app.use(cors({
-  origin: ['http://localhost:3001', 'https://israel-navy-test.onrender.com'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
+// Middleware לטיפול בשגיאות
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({ error: 'Internal server error', details: err.message });
+});
 
-app.use(express.json());
-
-async function startServer() {
+// הפעלת השרת רק אחרי התחברות לדאטהבייס
+const startServer = async () => {
   try {
     await AppDataSource.initialize();
-    console.log('Database Connected Successfully!');
+    console.log('Database connected successfully');
 
     app.use('/users', require('./routes/userRoutes'));
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error('Error during initialization:', error);
+    console.error('Server initialization error:', error);
     process.exit(1);
   }
-}
+};
 
 startServer();

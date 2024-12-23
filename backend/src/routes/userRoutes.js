@@ -56,67 +56,55 @@ router.post('/register', async (req, res) => {
 
 // Login user
 router.post('/login', async (req, res) => {
-  try {
-    console.log('Login attempt started', { body: req.body });
+  console.log('Login request received:', req.body);
 
+  try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      console.log('Missing credentials');
-      return res.status(400).send({
+      return res.status(400).json({
+        success: false,
         error: 'Email and password are required'
       });
     }
 
     const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({ where: { email } });
 
-    // בדיקת חיבור לדאטהבייס
-    if (!AppDataSource.isInitialized) {
-      console.error('Database not initialized');
-      return res.status(500).send({
-        error: 'Database connection error'
-      });
-    }
-
-    // חיפוש המשתמש
-    const user = await userRepository.createQueryBuilder('user')
-      .where('user.email = :email', { email })
-      .getOne();
-
-    console.log('User search result:', user ? 'Found' : 'Not found');
+    console.log('User found:', user ? 'yes' : 'no');
 
     if (!user) {
-      return res.status(401).send({
+      return res.status(401).json({
+        success: false,
         error: 'Invalid credentials'
       });
     }
 
-    // בדיקת סיסמה
-    const isValid = await bcrypt.compare(password, user.password_hash);
-    console.log('Password validation:', isValid);
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    console.log('Password valid:', isValidPassword);
 
-    if (!isValid) {
-      return res.status(401).send({
+    if (!isValidPassword) {
+      return res.status(401).json({
+        success: false,
         error: 'Invalid credentials'
       });
     }
 
-    // נכין את התשובה
     const responseData = {
+      success: true,
       id: user.id,
       email: user.email,
       fullName: user.fullName
     };
 
     console.log('Sending response:', responseData);
-
-    // נשלח את התשובה
-    return res.status(200).send(responseData);
+    res.json(responseData);  // שימוש ב-res.json במקום res.send
 
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).send({
-      error: 'Internal server error',
+    res.status(500).json({
+      success: false,
+      error: 'Server error',
       details: error.message
     });
   }
