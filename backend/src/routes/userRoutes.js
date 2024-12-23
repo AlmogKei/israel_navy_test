@@ -58,30 +58,26 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('Login attempt:', { email }); // הוסף לוג
 
-    // Validation
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email or password are required' });
-    }
-
-    // Check if the user exists
     const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOneBy({ email });
+    const user = await userRepository.findOne({ where: { email } });
 
     if (!user) {
-      return res.status(400).json({ error: 'Invalid email' });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Compare passwords
-    const isMatch = await bcrypt.compare(password, user.password_hash);
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
-    if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid password' });
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    res.status(200).json({ message: 'Login successful', userId: user.id });
+    console.log('Login successful for user:', user.id); // הוסף לוג
+    res.status(200).json({ userId: user.id });
+
   } catch (err) {
-    console.error(err);
+    console.error('Login error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
