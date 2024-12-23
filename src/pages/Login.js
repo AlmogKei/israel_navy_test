@@ -20,33 +20,26 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('${API_URL}/users/login', {
+      const response = await fetch(`${API_URL}/users/login`, { // תיקון כאן - גרשיים מעוגלות
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json'
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({ 
-          email: identifier, 
-          password 
+        body: JSON.stringify({
+          email: identifier,
+          password
         })
       });
 
       console.log('Response status:', response.status);
 
       if (response.status === 200 || response.status === 201) {
-        // בדיקה אם יש תוכן בתגובה
-        try {
-          const text = await response.text();
-          const data = text ? JSON.parse(text) : {};
-          
-          if (data.userId) {
-            navigate(`/tasks/${data.userId}`);
-          } else {
-            window.location.href = '${API_URL}/tasks/1';
-          }
-        } catch (parseError) {
-          // אם אין JSON תקין, ננסה ניווט ברירת מחדל
-          window.location.href = '${API_URL}/tasks/1';
+        const data = await response.json();
+        if (data.userId) {
+          navigate(`/tasks/${data.userId}`); // תיקון כאן
+        } else {
+          navigate('/tasks/1'); // שימוש ב-navigate במקום window.location
         }
       } else {
         setError('שם משתמש או סיסמה שגויים');

@@ -40,7 +40,7 @@ const Register = () => {
 
       if (response.ok) {
         alert('נרשמת בהצלחה!');
-        window.location.replace(API_URL); // שינוי כאן
+        window.location.replace(`${API_URL}/users/login`);
         return;
       }
 
@@ -121,7 +121,7 @@ const Register = () => {
           <button type="submit" className="btn register-btn">הרשמה</button>
         </form>
         <p className="login-link">
-          כבר רשום/ה? <Link to="/">התחבר/י כאן</Link>
+          כבר רשום/ה? <Link to="/users/login">התחבר/י כאן</Link>
         </p>
       </div>
     </div>
