@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 
-const API_URL = 'https://israel-navy-test.onrender.com';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+console.log('Full API URL:', `${API_URL}/users/login`);
 
 const Login = () => {
   const [identifier, setIdentifier] = useState('');
@@ -15,12 +16,14 @@ const Login = () => {
     setError('');
 
     try {
-      console.log('Attempting login for:', identifier);
+      const apiUrl = `${API_URL}/users/login`;
+      console.log('Making request to:', apiUrl);
 
-      const response = await fetch(`${API_URL}/users/login`, {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           email: identifier,
@@ -28,33 +31,31 @@ const Login = () => {
         })
       });
 
-      // לוג מפורט של התשובה
-      console.log('Response details:', {
+      console.log('Response received:', {
         status: response.status,
         statusText: response.statusText,
-        ok: response.ok,
-        type: response.type
+        headers: Object.fromEntries(response.headers)
       });
 
       const text = await response.text();
-      console.log('Raw response:', text);
+      console.log('Raw response text:', text);
 
       if (!text) {
-        throw new Error('Empty response from server');
+        throw new Error('Empty response received');
       }
 
       const data = JSON.parse(text);
       console.log('Parsed response:', data);
 
       if (!data.success) {
-        throw new Error(data.error || 'Authentication failed');
+        throw new Error(data.error || 'Login failed');
       }
 
       navigate(`/users/tasks/${data.id}`);
 
     } catch (error) {
       console.error('Login error:', error);
-      setError(error.message || 'שגיאת התחברות');
+      setError(error.message);
     }
   };
 
