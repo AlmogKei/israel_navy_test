@@ -7,52 +7,48 @@ const taskRepository = require('../repositories/taskRepository');
 const router = express.Router();
 
 // Register a new user
+// userRoutes.js
 router.post('/register', async (req, res) => {
   try {
     const { fullName, email, phone, password } = req.body;
 
-    console.log('Request received:', { fullName, email, phone, password });
+    // לוגים לבדיקה
+    console.log('Received registration data:', { fullName, email, phone });
 
-    // Validation
+    // בדיקות תקינות
     if (!fullName || !email || !phone || !password) {
-      console.log('Validation failed');
       return res.status(400).json({ error: 'All fields are required' });
     }
 
-    console.log('Validation passed');
-
     const userRepository = AppDataSource.getRepository(User);
 
-    // Check if email already exists
+    // בדיקת משתמש קיים
     const existingUser = await userRepository.findOne({ where: { email } });
     if (existingUser) {
-      console.log('Email already registered:', email);
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    console.log('Email is unique, proceeding to hash password');
-
-    // Hash password
+    // הצפנת סיסמה
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    console.log('Password hashed, creating new user');
-
-    // Create new user
+    // יצירת משתמש חדש
     const newUser = userRepository.create({
       fullName,
       email,
       phone,
-      password_hash: hashedPassword,
+      password_hash: hashedPassword
     });
 
-    await userRepository.save(newUser);
+    // שמירה במסד הנתונים
+    const savedUser = await userRepository.save(newUser);
+    console.log('User saved:', savedUser);
 
-    console.log('User registered successfully:', newUser);
-
-    res.status(201).json({ message: 'User registered successfully', userId: newUser.id });
+    res.status(201).json({
+      message: 'User registered successfully',
+      userId: savedUser.id
+    });
   } catch (err) {
-    console.error('Error during registration:', err.message);
-    console.error('Full error stack:', err.stack);
+    console.error('Registration error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

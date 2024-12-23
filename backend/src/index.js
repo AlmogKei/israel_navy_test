@@ -9,7 +9,7 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:3001',
-    'https://israel-navy-test.onrender.com'  // הסרת ה-/ בסוף
+    'https://israel-navy-test.onrender.com'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
