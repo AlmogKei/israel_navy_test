@@ -15,72 +15,46 @@ const Login = () => {
     setError('');
 
     try {
-      const loginUrl = `${API_URL}/users/login`;
-      console.log('Sending request to:', loginUrl);
+      console.log('Attempting login for:', identifier);
 
-      const requestData = {
-        email: identifier,
-        password
-      };
-      console.log('Request data:', { email: requestData.email });
-
-      const response = await fetch(loginUrl, {
+      const response = await fetch(`${API_URL}/users/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(requestData)
+        body: JSON.stringify({
+          email: identifier,
+          password
+        })
       });
 
-      // נדפיס את כל המידע על התשובה
+      // לוג מפורט של התשובה
       console.log('Response details:', {
         status: response.status,
         statusText: response.statusText,
-        headers: Object.fromEntries(response.headers),
-        type: response.type,
-        url: response.url
+        ok: response.ok,
+        type: response.type
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers));
-
-      // קריאת התשובה כטקסט
       const text = await response.text();
       console.log('Raw response:', text);
 
-      // אם אין תוכן
       if (!text) {
-        console.error('Empty response received');
-        throw new Error('לא התקבלה תשובה מהשרת');
+        throw new Error('Empty response from server');
       }
 
-      // ניסיון לפרסר את התשובה
-      let data;
-      try {
-        data = JSON.parse(text);
-        console.log('Parsed response:', data);
-      } catch (e) {
-        console.error('Parse error:', e);
-        throw new Error('תשובה לא תקינה מהשרת');
+      const data = JSON.parse(text);
+      console.log('Parsed response:', data);
+
+      if (!data.success) {
+        throw new Error(data.error || 'Authentication failed');
       }
 
-      // בדיקת שגיאות
-      if (response.status >= 400) {
-        throw new Error(data.error || 'שגיאת התחברות');
-      }
-
-      // בדיקת מזהה משתמש
-      if (!data.id) {
-        throw new Error('חסר מזהה משתמש בתשובה מהשרת');
-      }
-
-      // ניווט למסך המשימות
       navigate(`/users/tasks/${data.id}`);
 
     } catch (error) {
       console.error('Login error:', error);
-      setError(error.message || 'שגיאת התחברות, אנא נסה שוב');
+      setError(error.message || 'שגיאת התחברות');
     }
   };
 
