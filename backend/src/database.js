@@ -1,7 +1,3 @@
-const { DataSource } = require('typeorm');
-const User = require('./entities/User');
-const Task = require('./entities/Task');
-
 const AppDataSource = new DataSource({
     type: 'postgres',
     url: process.env.DATABASE_URL || 'postgresql://development_mbkc_user:VID2LjAmMPnNNtfbTPCkMVxycGAkLXVu@dpg-ctjktstumphs73fbs4g0-a.oregon-postgres.render.com/development_mbkc',
@@ -13,13 +9,17 @@ const AppDataSource = new DataSource({
     entities: [User, Task]
 });
 
-// הוספת בדיקה שהחיבור לדאטהבייס עובד
+// בדיקת חיבור לדאטהבייס
 AppDataSource.initialize()
     .then(() => {
-        console.log("Database connection initialized");
+        console.log("Data Source has been initialized!");
+        
+        // בדיקה שאפשר לגשת למשתמשים
+        return AppDataSource.getRepository(User).count();
     })
-    .catch((error) => {
-        console.error("Error initializing database:", error);
+    .then(count => {
+        console.log(`Database connection verified. Found ${count} users.`);
+    })
+    .catch(err => {
+        console.error("Error during Data Source initialization:", err);
     });
-
-module.exports = AppDataSource;

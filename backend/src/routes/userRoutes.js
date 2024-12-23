@@ -56,52 +56,67 @@ router.post('/register', async (req, res) => {
 
 // Login user
 router.post('/login', async (req, res) => {
-  console.log('Login route hit'); // לוג חדש
   try {
+    console.log('Login attempt started', { body: req.body });
+
     const { email, password } = req.body;
-    console.log('Login request received for:', email);
+
+    if (!email || !password) {
+      console.log('Missing credentials');
+      return res.status(400).send({
+        error: 'Email and password are required'
+      });
+    }
 
     const userRepository = AppDataSource.getRepository(User);
 
     // בדיקת חיבור לדאטהבייס
-    const connection = AppDataSource.isInitialized;
-    console.log('Database connection status:', connection);
+    if (!AppDataSource.isInitialized) {
+      console.error('Database not initialized');
+      return res.status(500).send({
+        error: 'Database connection error'
+      });
+    }
 
-    const user = await userRepository.findOne({
-      where: { email }
-    });
-    console.log('User found:', user ? 'Yes' : 'No');
+    // חיפוש המשתמש
+    const user = await userRepository.createQueryBuilder('user')
+      .where('user.email = :email', { email })
+      .getOne();
+
+    console.log('User search result:', user ? 'Found' : 'Not found');
 
     if (!user) {
-      console.log('User not found');
-      return res.status(401).json({
-        error: 'משתמש לא קיים'
+      return res.status(401).send({
+        error: 'Invalid credentials'
       });
     }
 
+    // בדיקת סיסמה
     const isValid = await bcrypt.compare(password, user.password_hash);
-    console.log('Password valid:', isValid);
+    console.log('Password validation:', isValid);
 
     if (!isValid) {
-      return res.status(401).json({
-        error: 'סיסמה שגויה'
+      return res.status(401).send({
+        error: 'Invalid credentials'
       });
     }
 
-    // תשובה מוצלחת
+    // נכין את התשובה
     const responseData = {
       id: user.id,
       email: user.email,
       fullName: user.fullName
     };
+
     console.log('Sending response:', responseData);
 
-    return res.status(200).json(responseData);
+    // נשלח את התשובה
+    return res.status(200).send(responseData);
 
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({
-      error: 'שגיאת שרת פנימית',
+    return res.status(500).send({
+      error: 'Internal server error',
       details: error.message
     });
   }

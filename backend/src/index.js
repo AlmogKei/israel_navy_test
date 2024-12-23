@@ -5,6 +5,15 @@ const AppDataSource = require('./database');
 
 const app = express();
 
+// הוסף את זה לפני הראוטים
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`, {
+    body: req.body,
+    headers: req.headers
+  });
+  next();
+});
+
 app.use(cors({
   origin: ['http://localhost:3001', 'https://israel-navy-test.onrender.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
