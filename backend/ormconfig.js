@@ -2,11 +2,12 @@ require('dotenv').config();
 
 module.exports = {
   type: 'postgres',
-  url: process.env.DATABASE_URL || 'postgresql://development_mbkc_user:VID2LjAmMPnNNtfbTPCkMVxycGAkLXVu@dpg-ctjktstumphs73fbs4g0-a.oregon-postgres.render.com/development_mbkc',
-  ssl: {
-    rejectUnauthorized: false
-  },
+  host: process.env.DB_HOST || 'dpg-ctjktstumphs73fbs4g0-a.oregon-postgres.render.com',
+  port: parseInt(process.env.DB_PORT, 10) || 5432,
+  username: process.env.DB_USER || 'development_mbkc_user',
+  password: process.env.DB_PASSWORD || 'VID2LjAmMPnNNtfbTPCkMVxycGAkLXVu',
+  database: process.env.DB_NAME || 'development_mbkc',
   synchronize: true,
-  logging: true,
+  logging: false,
   entities: ['src/entities/*.js'],
 };
