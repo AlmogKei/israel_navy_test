@@ -11,6 +11,7 @@ const Register = () => {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState(null);
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -74,7 +75,6 @@ const Register = () => {
               required
             />
           </div>
-
 
           <div className="form-group">
             <label htmlFor="password">סיסמה:</label>

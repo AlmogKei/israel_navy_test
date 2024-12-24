@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 
+
 const Login = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -37,8 +38,6 @@ const Login = () => {
       setError(`Network error: ${error.message}`);
     }
   };
-
-
   return (
     <div className="login-container">
       <div className="login-card">
@@ -73,5 +72,4 @@ const Login = () => {
     </div>
   );
 };
-
 export default Login;
