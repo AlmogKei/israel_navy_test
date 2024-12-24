@@ -1,3 +1,4 @@
+// Register.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Register.css';
@@ -17,6 +18,7 @@ const Register = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
+        timeout: 10000, // Increase the timeout to 10 seconds
       });
 
       if (response.ok) {
@@ -31,7 +33,7 @@ const Register = () => {
     }
   };
 
-  
+
   return (
     <div className="register-container">
       <div className="register-card">

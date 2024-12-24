@@ -1,3 +1,4 @@
+// Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
@@ -20,6 +21,7 @@ const Login = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: identifier, password }),
+        timeout: 10000, // Increase the timeout to 10 seconds
       });
 
       if (response.ok) {
@@ -34,6 +36,7 @@ const Login = () => {
       console.error('Network error:', error);
     }
   };
+
 
   return (
     <div className="login-container">
