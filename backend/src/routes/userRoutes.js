@@ -61,28 +61,42 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // שימוש בשם העמודה הנכון
-    const { rows } = await pool.query(
-      'SELECT id, email, "fullName", password_hash FROM users WHERE email = $1',
-      [email]
-    );
+    // בדיקת שדות חובה
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'נדרש אימייל וסיסמה'
+      });
+    }
 
-    console.log('Query result:', {
-      found: rows.length > 0,
-      email: rows[0]?.email
-    });
+    // חיפוש המשתמש
+    const query = {
+      text: `
+              SELECT id, email, password_hash, fullname, phone 
+              FROM users 
+              WHERE email = $1
+          `,
+      values: [email]
+    };
 
-    if (rows.length === 0) {
+    console.log('Executing query:', query);
+    const { rows } = await pool.query(query);
+    console.log('Query returned rows:', rows.length);
+
+    const user = rows[0];
+    if (!user) {
+      console.log('No user found with email:', email);
       return res.status(401).json({
         success: false,
         error: 'משתמש לא קיים'
       });
     }
 
-    const user = rows[0];
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    console.log('Found user:', { id: user.id, email: user.email });
 
-    console.log('Password validation:', { isValid: isValidPassword });
+    // בדיקת סיסמה
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    console.log('Password validation result:', isValidPassword);
 
     if (!isValidPassword) {
       return res.status(401).json({
@@ -91,12 +105,16 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    return res.json({
+    // שליחת תשובה
+    const responseData = {
       success: true,
       id: user.id,
       email: user.email,
-      fullName: user.fullName  // שימוש בשם העמודה הנכון
-    });
+      fullName: user.fullname
+    };
+
+    console.log('Sending response:', responseData);
+    return res.json(responseData);
 
   } catch (error) {
     console.error('Login error:', error);
@@ -108,82 +126,23 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// נתיב בדיקה
-router.get('/test', async (req, res) => {
+// נתיב בדיקה פשוט
+router.get('/check', async (req, res) => {
   try {
-    const { rows } = await pool.query(`
-          SELECT id, email, "fullName"
-          FROM users
-          ORDER BY id DESC
-          LIMIT 5
-      `);
+    // בדיקה פשוטה של כל המשתמשים
+    const result = await pool.query('SELECT id, email, "fullName" FROM users');
 
     res.json({
       success: true,
-      users: rows
-    });
-  } catch (error) {
-    console.error('Test route error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// נוסיף נתיב בדיקה
-router.get('/check-users', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT id, email FROM users');
-    return res.json({
-      success: true,
-      userCount: result.rows.length,
+      userCount: result.rowCount,
       users: result.rows
     });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// נתיב בדיקה חדש
-router.get('/debug', async (req, res) => {
-  let client;
-  try {
-    client = await pool.connect();
-
-    // בדיקת מבנה הטבלה
-    const tableStructure = await client.query(`
-          SELECT column_name, data_type 
-          FROM information_schema.columns 
-          WHERE table_name = 'users'
-          ORDER BY ordinal_position
-      `);
-
-    // בדיקת משתמשים
-    const users = await client.query(`
-          SELECT id, email, fullname, created_at 
-          FROM users 
-          ORDER BY id DESC
-      `);
-
-    res.json({
-      success: true,
-      tableStructure: tableStructure.rows,
-      userCount: users.rowCount,
-      users: users.rows
-    });
 
   } catch (error) {
-    console.error('Debug endpoint error:', error);
     res.status(500).json({
       success: false,
       error: error.message
     });
-  } finally {
-    if (client) client.release();
   }
 });
 
