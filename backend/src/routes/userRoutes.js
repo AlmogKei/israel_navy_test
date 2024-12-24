@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt');
 const AppDataSource = require('../database');
 const User = require('../entities/User');
 const taskRepository = require('../repositories/taskRepository');
-const pool = require('../config/database');
 
 const router = express.Router();
 
@@ -11,138 +10,83 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
   try {
     const { fullName, email, phone, password } = req.body;
-    console.log('Starting registration with:', { fullName, email, phone });
+
+    console.log('Request received:', { fullName, email, phone, password });
+
+    // Validation
+    if (!fullName || !email || !phone || !password) {
+      console.log('Validation failed');
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    console.log('Validation passed');
 
     const userRepository = AppDataSource.getRepository(User);
 
-    // בדיקת משתמש קיים
+    // Check if email already exists
     const existingUser = await userRepository.findOne({ where: { email } });
     if (existingUser) {
-      console.log('User already exists:', email);
+      console.log('Email already registered:', email);
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    // הצפנת סיסמה
+    console.log('Email is unique, proceeding to hash password');
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // יצירת משתמש חדש
+    console.log('Password hashed, creating new user');
+
+    // Create new user
     const newUser = userRepository.create({
       fullName,
       email,
       phone,
-      password_hash: hashedPassword
+      password_hash: hashedPassword,
     });
 
-    // שמירה בדאטהבייס
-    const savedUser = await userRepository.save(newUser);
-    console.log('User saved successfully:', savedUser.id);
+    await userRepository.save(newUser);
 
-    // בדיקה שהמשתמש נשמר
-    const verifyUser = await userRepository.findOne({ where: { id: savedUser.id } });
-    console.log('Verification of saved user:', verifyUser ? 'Success' : 'Failed');
+    console.log('User registered successfully:', newUser);
 
-    res.status(201).json({
-      message: 'User registered successfully',
-      userId: savedUser.id,
-      fullName: savedUser.fullName
-    });
-
-  } catch (error) {
-    console.error('Registration error:', error);
-    console.error('Full error stack:', error.stack);
-    res.status(500).json({ error: 'Registration failed: ' + error.message });
+    res.status(201).json({ message: 'User registered successfully', userId: newUser.id });
+  } catch (err) {
+    console.error('Error during registration:', err.message);
+    console.error('Full error stack:', err.stack);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Login users
-router.post('/login', async (req, res) => {
-  console.log('Login attempt with:', req.body);
 
+// Login user
+router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // בדיקת שדות חובה
+    // Validation
     if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        error: 'נדרש אימייל וסיסמה'
-      });
+      return res.status(400).json({ error: 'Email or password are required' });
     }
 
-    // חיפוש המשתמש
-    const query = {
-      text: `
-              SELECT id, email, password_hash, fullname, phone 
-              FROM users 
-              WHERE email = $1
-          `,
-      values: [email]
-    };
+    // Check if the user exists
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOneBy({ email });
 
-    console.log('Executing query:', query);
-    const { rows } = await pool.query(query);
-    console.log('Query returned rows:', rows.length);
-
-    const user = rows[0];
     if (!user) {
-      console.log('No user found with email:', email);
-      return res.status(401).json({
-        success: false,
-        error: 'משתמש לא קיים'
-      });
+      return res.status(400).json({ error: 'Invalid email' });
     }
 
-    console.log('Found user:', { id: user.id, email: user.email });
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password_hash);
 
-    // בדיקת סיסמה
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
-    console.log('Password validation result:', isValidPassword);
-
-    if (!isValidPassword) {
-      return res.status(401).json({
-        success: false,
-        error: 'סיסמה שגויה'
-      });
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid password' });
     }
 
-    // שליחת תשובה
-    const responseData = {
-      success: true,
-      id: user.id,
-      email: user.email,
-      fullName: user.fullname
-    };
-
-    console.log('Sending response:', responseData);
-    return res.json(responseData);
-
-  } catch (error) {
-    console.error('Login error:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'שגיאת שרת',
-      details: error.message
-    });
-  }
-});
-
-// נתיב בדיקה פשוט
-router.get('/check', async (req, res) => {
-  try {
-    // בדיקה פשוטה של כל המשתמשים
-    const result = await pool.query('SELECT id, email, "fullName" FROM users');
-
-    res.json({
-      success: true,
-      userCount: result.rowCount,
-      users: result.rows
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
+    res.status(200).json({ message: 'Login successful', userId: user.id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

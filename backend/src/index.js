@@ -1,30 +1,28 @@
 const express = require('express');
 const cors = require('cors');
-const pool = require('./config/database');  // שינוי משם המשתנה
+const AppDataSource = require('./database');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// בדיקת חיבור לדאטהבייס
-pool.connect()
-  .then(client => {
-    console.log('Database connection successful');
-    client.release();
-  })
-  .catch(err => {
-    console.error('Database connection error:', err);
-  });
+(async () => {
+  try {
+    await AppDataSource.initialize();
+    console.log('Database connected!');
 
-// Test route
-app.get('/test', (req, res) => {
-  res.json({ message: 'Server working' });
-});
 
-app.use('/users', require('./routes/userRoutes'));
+    app.use('/users', userRoutes);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+    // starting the server
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server running on https://israel-navy-test.onrender.com`);
+    });
+  } catch (error) {
+    console.error('Error during initialization:', error);
+    process.exit(1);
+  }
+})();

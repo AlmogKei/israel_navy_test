@@ -18,8 +18,5 @@
     "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.20"
   },
-  "description": "",
-  "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
-  }
+  "description": ""
 }
