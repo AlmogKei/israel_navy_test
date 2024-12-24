@@ -7,6 +7,9 @@ module.exports = {
   username: process.env.DB_USER || 'development_mbkc_user',
   password: process.env.DB_PASSWORD || 'VID2LjAmMPnNNtfbTPCkMVxycGAkLXVu',
   database: process.env.DB_NAME || 'development_mbkc',
+  ssl: {
+    rejectUnauthorized: false
+  },
   synchronize: true,
   logging: false,
   entities: ['src/entities/*.js'],
