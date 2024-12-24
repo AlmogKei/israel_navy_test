@@ -9,6 +9,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,21 +19,20 @@ const Register = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
-        timeout: 10000, // Increase the timeout to 10 seconds
+        timeout: 10000,
       });
 
       if (response.ok) {
         const data = await response.json();
         console.log('User registered:', data);
       } else {
-        const error = await response.json();
-        console.error('Error:', error);
+        const errorData = await response.json();
+        setError(`Error: ${errorData.error}`);
       }
     } catch (err) {
-      console.error('Error:', err);
+      setError(`Error: ${err.message}`);
     }
   };
-
 
   return (
     <div className="register-container">

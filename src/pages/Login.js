@@ -6,13 +6,14 @@ import '../styles/login.css';
 const Login = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!identifier || !password) {
-      console.error('Email and password are required');
+      setError('Email and password are required');
       return;
     }
 
@@ -21,7 +22,7 @@ const Login = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: identifier, password }),
-        timeout: 10000, // Increase the timeout to 10 seconds
+        timeout: 10000,
       });
 
       if (response.ok) {
@@ -29,11 +30,11 @@ const Login = () => {
         console.log('Login successful:', data);
         navigate(`/tasks/${data.userId}`);
       } else {
-        const error = await response.json();
-        console.error('Login error:', error);
+        const errorData = await response.json();
+        setError(`Login error: ${errorData.error}`);
       }
     } catch (error) {
-      console.error('Network error:', error);
+      setError(`Network error: ${error.message}`);
     }
   };
 
