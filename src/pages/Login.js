@@ -22,15 +22,14 @@ const Login = () => {
         body: JSON.stringify({ email: identifier, password }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error('Login error:', data);
-        return;
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Login successful:', data);
+        navigate(`/tasks/${data.userId}`);
+      } else {
+        const error = await response.json();
+        console.error('Login error:', error);
       }
-
-      console.log('Login successful:', data);
-      navigate(`/tasks/${data.userId}`);
     } catch (error) {
       console.error('Network error:', error);
     }

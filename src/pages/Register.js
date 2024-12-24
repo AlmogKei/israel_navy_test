@@ -9,7 +9,6 @@ const Register = () => {
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
 
-  // send the details to the docker server
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -32,6 +31,7 @@ const Register = () => {
     }
   };
 
+  
   return (
     <div className="register-container">
       <div className="register-card">
