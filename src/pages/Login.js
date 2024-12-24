@@ -2,60 +2,37 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-console.log('Full API URL:', `${API_URL}/users/login`);
-
 const Login = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+
+    if (!identifier || !password) {
+      console.error('Email and password are required');
+      return;
+    }
 
     try {
-      const apiUrl = `${API_URL}/users/login`;
-      console.log('Making request to:', apiUrl);
-
-      const response = await fetch(apiUrl, {
+      const response = await fetch('https://israel-navy-test.onrender.com/users/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          email: identifier,
-          password
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: identifier, password }),
       });
 
-      console.log('Response received:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers)
-      });
+      const data = await response.json();
 
-      const text = await response.text();
-      console.log('Raw response text:', text);
-
-      if (!text) {
-        throw new Error('Empty response received');
+      if (!response.ok) {
+        console.error('Login error:', data);
+        return;
       }
 
-      const data = JSON.parse(text);
-      console.log('Parsed response:', data);
-
-      if (!data.success) {
-        throw new Error(data.error || 'Login failed');
-      }
-
-      navigate(`/users/tasks/${data.id}`);
-
+      console.log('Login successful:', data);
+      navigate(`/tasks/${data.userId}`);
     } catch (error) {
-      console.error('Login error:', error);
-      setError(error.message);
+      console.error('Network error:', error);
     }
   };
 
@@ -63,12 +40,11 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <h2 className="login-title">התחברות</h2>
-        {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleLogin} className="login-form">
           <div className="form-group">
-            <label>אימייל:</label>
+            <label>אימייל :</label>
             <input
-              type="email"
+              type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               placeholder="הזן אימייל"
@@ -88,7 +64,7 @@ const Login = () => {
           <button type="submit" className="login-btn">התחבר</button>
         </form>
         <div className="forgot-password-link">
-          <a href="/">שכחתי סיסמה</a>
+          <a href="/ForgotPassword">שכחתי סיסמה</a>
         </div>
       </div>
     </div>

@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import '../styles/Register.css';
-
-const API_URL = 'https://israel-navy-test.onrender.com';
 
 const Register = () => {
   const [fullName, setFullName] = useState('');
@@ -10,43 +8,27 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
-  const navigate = useNavigate(); 
 
+  // send the details to the docker server
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (password !== confirmPass) {
-      alert('הסיסמאות אינן תואמות');
-      return;
-    }
-
     try {
-      const response = await fetch(`${API_URL}/users/register`, {
+      const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          fullName,
-          email,
-          phone,
-          password
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
       });
 
       if (response.ok) {
-        alert('נרשמת בהצלחה!');
-        navigate('/users/login');
-        return;
+        const data = await response.json();
+        console.log('User registered:', data);
+      } else {
+        const error = await response.json();
+        console.error('Error:', error);
       }
-
-      const errorData = await response.json();
-      alert(errorData.error || 'שגיאה בהרשמה');
-
     } catch (err) {
       console.error('Error:', err);
-      alert('שגיאת רשת');
     }
   };
 
@@ -90,6 +72,7 @@ const Register = () => {
               required
             />
           </div>
+
 
           <div className="form-group">
             <label htmlFor="password">סיסמה:</label>

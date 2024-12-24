@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import '../styles/Tasks.css';
 
-const API_URL = 'https://israel-navy-test.onrender.com';
-
 const Tasks = () => {
   const { userId } = useParams();
   const [tasks, setTasks] = useState([]);
@@ -25,16 +23,17 @@ const Tasks = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch(`${API_URL}/users/${userId}/tasks`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch tasks');
-      }
+      const response = await fetch(`https://israel-navy-test.onrender.com/users/tasks/${userId}`);
       const data = await response.json();
-      setTasks(data);
-      setError(null);
+
+      if (response.ok) {
+        setTasks(data);
+      } else {
+        setError(data.error || 'Failed to fetch tasks');
+      }
     } catch (err) {
       console.error('Error fetching tasks:', err);
-      setError(err.message || 'שגיאת רשת');
+      setError('Network error occurred');
     }
   };
 
@@ -55,32 +54,25 @@ const Tasks = () => {
 
   const handleSaveEdit = async (taskId) => {
     try {
-      const response = await fetch(`${API_URL}/users/${userId}/tasks/${taskId}`, {
+      const response = await fetch(`https://israel-navy-test.onrender.com/users/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          task_name: editedTask.task_name,
-          task_value: Number(editedTask.task_value),
-          user_id: Number(userId)
-        }),
+        body: JSON.stringify(editedTask),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update task');
+        throw new Error('Failed to update task');
       }
 
       const updatedTask = await response.json();
-      setTasks(prevTasks =>
-        prevTasks.map(task => task.id === taskId ? updatedTask : task)
-      );
+      setTasks(tasks.map(task =>
+        task.id === taskId ? updatedTask : task
+      ));
       setEditTaskId(null);
       setEditedTask({ task_name: '', task_value: '' });
-      setError(null);
-
     } catch (error) {
       console.error('Error updating task:', error);
-      setError(error.message || 'שגיאה בעדכון המשימה');
+      setError(error.message);
     }
   };
 
@@ -95,22 +87,18 @@ const Tasks = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/users/${userId}/tasks/${taskId}`, {
+      const response = await fetch(`https://israel-navy-test.onrender.com/users/tasks/${taskId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete task');
+      if (response.ok) {
+        setTasks(tasks.filter((task) => task.id !== taskId));
+      } else {
+        throw new Error('Failed to delete task');
       }
-
-      setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
-      setError(null);
-
     } catch (error) {
       console.error('Error deleting task:', error);
-      setError(error.message || 'שגיאה במחיקת המשימה');
+      setError(error.message);
     }
   };
 
@@ -121,33 +109,28 @@ const Tasks = () => {
         return;
       }
 
-      const response = await fetch(`${API_URL}/users/${userId}/tasks`, {
+      const response = await fetch('https://israel-navy-test.onrender.com/users/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          task_name: newTask.task_name,
-          task_value: Number(newTask.task_value),
-          user_id: Number(userId)
+          ...newTask,
+          user_id: userId
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add task');
+        throw new Error('Failed to add task');
       }
 
       const addedTask = await response.json();
-      setTasks(prevTasks => [...prevTasks, addedTask]);
+      setTasks([...tasks, addedTask]);
       setShowAddModal(false);
       setNewTask({ task_name: '', task_value: '' });
-      setError(null);
-
     } catch (error) {
       console.error('Error adding task:', error);
-      setError(error.message || 'שגיאה בהוספת המשימה');
+      setError(error.message);
     }
   };
-
   return (
     <div className="tasks-container">
       <div className="tasks-card">
@@ -213,6 +196,7 @@ const Tasks = () => {
           הוסף משימה
         </button>
       </div>
+
 
       {showAddModal && (
         <div className="modal">
