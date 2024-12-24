@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import '../styles/Tasks.css';
 
+
+
 const Tasks = () => {
   const { userId } = useParams();
   const [tasks, setTasks] = useState([]);
@@ -17,13 +19,14 @@ const Tasks = () => {
     task_value: ''
   });
 
+  // pool tasks from the sql
   useEffect(() => {
     fetchTasks();
   }, [userId]);
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch(`https://israel-navy-test.onrender.com/users/tasks/${userId}`);
+      const response = await fetch(`https://israel-navy-test.onrender.com//users/tasks/${userId}`);
       const data = await response.json();
 
       if (response.ok) {
@@ -37,6 +40,7 @@ const Tasks = () => {
     }
   };
 
+  // start edit task
   const handleEdit = (task) => {
     setEditTaskId(task.id);
     setEditedTask({
@@ -45,6 +49,7 @@ const Tasks = () => {
     });
   };
 
+  // update edit
   const handleEditChange = (field, value) => {
     setEditedTask(prev => ({
       ...prev,
@@ -52,9 +57,10 @@ const Tasks = () => {
     }));
   };
 
+  // save edit
   const handleSaveEdit = async (taskId) => {
     try {
-      const response = await fetch(`https://israel-navy-test.onrender.com/users/tasks/${taskId}`, {
+      const response = await fetch(`https://israel-navy-test.onrender.com//users/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editedTask),
@@ -70,24 +76,27 @@ const Tasks = () => {
       ));
       setEditTaskId(null);
       setEditedTask({ task_name: '', task_value: '' });
+
     } catch (error) {
       console.error('Error updating task:', error);
       setError(error.message);
     }
   };
 
+  // cancel edit
   const handleCancelEdit = () => {
     setEditTaskId(null);
     setEditedTask({ task_name: '', task_value: '' });
   };
 
+  // delete task
   const handleDelete = async (taskId) => {
     if (!window.confirm('האם אתה בטוח שברצונך למחוק משימה זו?')) {
       return;
     }
 
     try {
-      const response = await fetch(`https://israel-navy-test.onrender.com/users/tasks/${taskId}`, {
+      const response = await fetch(`https://israel-navy-test.onrender.com//users/tasks/${taskId}`, {
         method: 'DELETE',
       });
 
@@ -102,6 +111,7 @@ const Tasks = () => {
     }
   };
 
+  // adding new task
   const handleAddTask = async () => {
     try {
       if (!newTask.task_name || !newTask.task_value) {
@@ -109,7 +119,7 @@ const Tasks = () => {
         return;
       }
 
-      const response = await fetch('https://israel-navy-test.onrender.com/users/tasks', {
+      const response = await fetch('https://israel-navy-test.onrender.com//users/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -126,11 +136,13 @@ const Tasks = () => {
       setTasks([...tasks, addedTask]);
       setShowAddModal(false);
       setNewTask({ task_name: '', task_value: '' });
+
     } catch (error) {
       console.error('Error adding task:', error);
       setError(error.message);
     }
   };
+
   return (
     <div className="tasks-container">
       <div className="tasks-card">
@@ -197,7 +209,7 @@ const Tasks = () => {
         </button>
       </div>
 
-
+      
       {showAddModal && (
         <div className="modal">
           <div className="modal-content">

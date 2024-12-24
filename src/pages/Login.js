@@ -1,43 +1,41 @@
-// Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 
-
 const Login = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!identifier || !password) {
-      setError('Email and password are required');
+      console.error('Email and password are required');
       return;
     }
 
     try {
-      const response = await fetch('https://israel-navy-test.onrender.com/users/login', {
+      const response = await fetch('https://israel-navy-test.onrender.com//users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: identifier, password }),
-        timeout: 10000,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Login successful:', data);
-        navigate(`/tasks/${data.userId}`);
-      } else {
-        const errorData = await response.json();
-        setError(`Login error: ${errorData.error}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Login error:', data);
+        return;
       }
+
+      console.log('Login successful:', data);
+      navigate(`/tasks/${data.userId}`);
     } catch (error) {
-      setError(`Network error: ${error.message}`);
+      console.error('Network error:', error);
     }
   };
+
   return (
     <div className="login-container">
       <div className="login-card">
@@ -72,4 +70,5 @@ const Login = () => {
     </div>
   );
 };
+
 export default Login;

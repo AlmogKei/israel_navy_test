@@ -1,4 +1,3 @@
-// Register.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Register.css';
@@ -9,29 +8,27 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
-  const [error, setError] = useState(null);
 
-
+  // send the details to the docker server
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
-      const response = await fetch('https://israel-navy-test.onrender.com/users/register', {
+      const response = await fetch('https://israel-navy-test.onrender.com//users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
-        timeout: 10000,
       });
-
+  
       if (response.ok) {
         const data = await response.json();
         console.log('User registered:', data);
       } else {
-        const errorData = await response.json();
-        setError(`Error: ${errorData.error}`);
+        const error = await response.json();
+        console.error('Error:', error);
       }
     } catch (err) {
-      setError(`Error: ${err.message}`);
+      console.error('Error:', err);
     }
   };
 
@@ -75,6 +72,7 @@ const Register = () => {
               required
             />
           </div>
+
 
           <div className="form-group">
             <label htmlFor="password">סיסמה:</label>
