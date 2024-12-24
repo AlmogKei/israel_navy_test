@@ -16,7 +16,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('https://israel-navy-test.onrender.com//users/login', {
+      const response = await fetch('https://israel-navy-test.onrender.com/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: identifier, password }),
