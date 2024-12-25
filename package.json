@@ -1,5 +1,5 @@
 {
-  "name": "almogcv",
+  "name": "navy_test",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -22,9 +22,9 @@
     "webpack": "^5.94.0"
   },
   "scripts": {
-    "start": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
-    "build": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts build",
-    "test": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts test",
+    "start": "npm start",
+    "build": "npm build",
+    "test": "npm test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
