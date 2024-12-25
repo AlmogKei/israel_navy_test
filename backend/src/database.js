@@ -1,5 +1,5 @@
 const { DataSource } = require('typeorm');
-const config = require('../ormconfig');
+const config = require('./ormconfig');
 const User = require('./entities/User');
 const Task = require('./entities/Task');
 
