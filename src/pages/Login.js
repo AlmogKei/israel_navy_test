@@ -63,9 +63,6 @@ const Login = () => {
           </div>
           <button type="submit" className="login-btn">התחבר</button>
         </form>
-        <div className="forgot-password-link">
-          <a href="/ForgotPassword">שכחתי סיסמה</a>
-        </div>
       </div>
     </div>
   );

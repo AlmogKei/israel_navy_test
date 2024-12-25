@@ -105,6 +105,18 @@ body {
   text-decoration: underline;
 }
 
+/* === תוספת להודעת הצלחה === */
+.success-message {
+  background-color: #e2f0da;
+  color: #4CAF50;
+  border: 2px solid #4CAF50;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  animation: fadeIn 1s ease; 
+}
+
 @media (max-width: 768px) {
   .register-card {
     width: 90%;

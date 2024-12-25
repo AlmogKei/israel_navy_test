@@ -8,21 +8,28 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
+  const [successMessage, setSuccessMessage] = useState(''); // הודעת הצלחה
 
-  // send the details to the docker server
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
       const response = await fetch('https://israel-navy-server.onrender.com/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fullName, email, phone, password, confirmPass }),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         console.log('User registered:', data);
+        setSuccessMessage('נרשמת בהצלחה!');
+        setFullName('');
+        setEmail('');
+        setPhone('');
+        setPassword('');
+        setConfirmPass('');
+        setTimeout(() => setSuccessMessage(''), 5000); // נקה הודעת הצלחה אחרי 5 שניות
       } else {
         const error = await response.json();
         console.error('Error:', error);
@@ -35,6 +42,7 @@ const Register = () => {
   return (
     <div className="register-container">
       <div className="register-card">
+        {successMessage && <div className="success-message">{successMessage}</div>}
         <h2 className="register-title">הרשמה</h2>
         <form onSubmit={handleSubmit} className="register-form">
           <div className="form-group">
@@ -72,7 +80,6 @@ const Register = () => {
               required
             />
           </div>
-
 
           <div className="form-group">
             <label htmlFor="password">סיסמה:</label>
