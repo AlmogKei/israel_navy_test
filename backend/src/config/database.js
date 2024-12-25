@@ -1,12 +1,17 @@
-const { Pool } = require('pg');
+const { DataSource } = require('typeorm');
+const config = require('./ormconfig');
+const User = require('./entities/User');
+const Task = require('./entities/Task');
 
-const pool = new Pool({
-  host: 'postgresql://development_mbkc_user:VID2LjAmMPnNNtfbTPCkMVxycGAkLXVu@dpg-ctjktstumphs73fbs4g0-a/development_mbkc',
-  port: 5432,
-  user: 'development_mbkc_user',
-  password: 'VID2LjAmMPnNNtfbTPCkMVxycGAkLXVu',
-  database: 'development_mbkc'
+// Initialize the DataSource
+const AppDataSource = new DataSource({
+    ...config,
+    entities: [
+        User,
+        Task,
+    ],
+    logging: true
 });
 
-module.exports = pool;
 
+module.exports = AppDataSource;
