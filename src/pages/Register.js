@@ -8,7 +8,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [phone, setPhone] = useState('');
-  const [successMessage, setSuccessMessage] = useState(''); // הודעת הצלחה
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,12 +24,19 @@ const Register = () => {
         const data = await response.json();
         console.log('User registered:', data);
         setSuccessMessage('נרשמת בהצלחה!');
+        
+        // איפוס השדות
         setFullName('');
         setEmail('');
         setPhone('');
         setPassword('');
         setConfirmPass('');
-        setTimeout(() => setSuccessMessage(''), 5000); // נקה הודעת הצלחה אחרי 5 שניות
+
+        // המתנה קצרה כדי שהמשתמש יראה את הודעת ההצלחה (לא חובה)
+        setTimeout(() => {
+          // הפניה לעמוד ה-Login
+          window.location.href = 'https://israel-navy-test.onrender.com/users/login';
+        }, 2000);
       } else {
         const error = await response.json();
         console.error('Error:', error);
