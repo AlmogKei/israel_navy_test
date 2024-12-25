@@ -1,9 +1,8 @@
 require('dotenv').config();
 
-
 module.exports = {
   type: 'postgres',
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST || 'dpg-ctjktstumphs73fbs4g0-a.oregon-postgres.render.com',
   port: parseInt(process.env.DB_PORT, 10) || 5432,
   username: process.env.DB_USER || 'development_mbkc_user',
   password: process.env.DB_PASSWORD || 'VID2LjAmMPnNNtfbTPCkMVxycGAkLXVu',
