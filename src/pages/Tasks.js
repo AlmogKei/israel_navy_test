@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import '../styles/Tasks.css';
 
-
 const Tasks = () => {
   const { userId } = useParams();
   const [tasks, setTasks] = useState([]);
@@ -146,7 +145,9 @@ const Tasks = () => {
     <div className="tasks-container">
       <div className="tasks-card">
         <h2 className="tasks-title">רשימת המטלות שלך</h2>
+        
         {error && <div className="error-message">{error}</div>}
+        
         <div className="tasks-list">
           {tasks.map((task) => (
             <div className="task-item" key={task.id}>
@@ -202,13 +203,14 @@ const Tasks = () => {
             </div>
           ))}
         </div>
+        
         {tasks.length === 0 && <p className="no-tasks">אין משימות להצגה</p>}
+        
         <button className="add-task-btn" onClick={() => setShowAddModal(true)}>
           הוסף משימה
         </button>
       </div>
 
-      
       {showAddModal && (
         <div className="modal">
           <div className="modal-content">

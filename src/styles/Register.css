@@ -105,7 +105,6 @@ body {
   text-decoration: underline;
 }
 
-/* === תוספת להודעת הצלחה === */
 .success-message {
   background-color: #e2f0da;
   color: #4CAF50;
