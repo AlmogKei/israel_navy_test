@@ -225,12 +225,12 @@ const Tasks = () => {
               />
             </div>
             <div className="form-group">
-              <label>ערך המשימה:</label>
+              <label>מספר המשימה:</label>
               <input
                 type="number"
                 value={newTask.task_value}
                 onChange={(e) => setNewTask({ ...newTask, task_value: e.target.value })}
-                placeholder="הכנס ערך משימה"
+                placeholder="הכנס מספר משימה"
               />
             </div>
             <div className="modal-actions">
